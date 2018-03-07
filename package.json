@@ -1,6 +1,6 @@
 {
     "name": "@cookielab.io/postgres-client",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "license": "MIT",
     "main": "lib/index.js",
     "scripts": {
@@ -10,6 +10,9 @@
         "flow": "bin/flow || true",
         "test": "bin/jest",
         "check-all": "bin/check-all || true"
+    },
+    "engines": {
+        "node": ">=8.0.0"
     },
     "dependencies": {
         "lodash": "^4.17.5",
