@@ -1,0 +1,21 @@
+# Logs
+logs
+*.log
+
+# Coverage directory used by tools like istanbul
+coverage
+
+# Compiled binary addons (http://nodejs.org/api/addons.html)
+build/Release
+
+# Dependency directory
+# https://docs.npmjs.com/cli/shrinkwrap#caveats
+node_modules
+
+# Debug log from npm
+npm-debug.log
+
+# Transpiled code
+lib
+
+yarn.lock
