@@ -12,6 +12,8 @@ class BatchInsertCollector {
     batchSize: number;
     querySuffix: string;
     rows: Row[];
+    batchPromise: Promise<void>;
+    batchPromiseHandlers: {resolve: () => void, reject: (Error) => void};
 
     constructor(connection: Connection, tableName: string): void {
         this.connection = connection;
@@ -19,6 +21,9 @@ class BatchInsertCollector {
         this.batchSize = maxBatchInsert;
         this.querySuffix = '';
         this.rows = [];
+        this.batchPromise = new Promise((resolve: () => void, reject: (Error) => void): void => {
+            this.batchPromiseHandlers = {resolve, reject};
+        });
     }
 
     setBatchSize(batchSize: number): BatchInsertCollector {
@@ -35,16 +40,32 @@ class BatchInsertCollector {
 
     async add(row: Row): Promise<void> {
         this.rows.push(row);
+        const promise = this.batchPromise;
 
+        if (this.rows.length === 1) {
+            process.nextTick(() => this.flush());
+        }
         if (this.rows.length >= this.batchSize) {
             await this.flush();
         }
+
+        return promise;
     }
 
     async flush(): Promise<void> {
         if (this.rows.length > 0) {
-            await this.connection.query(SQL`INSERT INTO $identifier${this.tableName} $multiInsert${this.rows} $raw${this.querySuffix}`);
+            const rows = this.rows;
+            const batchPromiseHandlers = this.batchPromiseHandlers;
             this.rows = [];
+            this.batchPromise = new Promise((resolve: () => void, reject: (Error) => void): void => {
+                this.batchPromiseHandlers = {resolve, reject};
+            });
+            try {
+                await this.connection.query(SQL`INSERT INTO $identifier${this.tableName} $multiInsert${rows} $raw${this.querySuffix}`);
+                batchPromiseHandlers.resolve();
+            } catch (error) {
+                batchPromiseHandlers.reject(error);
+            }
         }
     }
 }

@@ -23,17 +23,31 @@ describe('BatchInsertCollector', () => {
 
         const collector = new BatchInsertCollector(database, 'account').setBatchSize(2);
 
-        await collector.add(createItem(1));
-        await collector.add(createItem(2));
-        await collector.add(createItem(3));
-        await collector.add(createItem(4));
+        await Promise.all([
+            collector.add(createItem(1)),
+            collector.add(createItem(2)),
+            collector.add(createItem(3)),
+            collector.add(createItem(4)),
+        ]);
         expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(2);
 
-        await collector.add(createItem(5));
+        const promise = collector.add(createItem(5));
         expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(2);
 
         await collector.flush();
+        await promise;
         expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(3);
+
+        spyOnDatabaseQuery.mockReset();
+    });
+
+    it('calls a query on next tick', async () => {
+        const spyOnDatabaseQuery = jest.spyOn(database, 'query');
+
+        const collector = new BatchInsertCollector(database, 'account').setBatchSize(2);
+
+        await collector.add(createItem(1));
+        expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(1);
 
         spyOnDatabaseQuery.mockReset();
     });
