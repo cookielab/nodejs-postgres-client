@@ -2,8 +2,12 @@
 
 import QueryError from './errors/QueryError';
 
+type DatabaseError = Error & {
+    code?: string,
+};
+
 const isUniqueViolation = (error: Error): boolean => {
-    const databaseError = error instanceof QueryError && error.causedBy instanceof Error
+    const databaseError: DatabaseError = error instanceof QueryError && error.causedBy instanceof Error
         ? error.causedBy
         : error;
 
