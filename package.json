@@ -43,10 +43,9 @@
         "roots": [
             "<rootDir>/tests"
         ],
-        "coveragePathIgnorePatterns": [
-            "/node_modules/",
-            "/tests/bootstrap.js"
-        ],
-        "testEnvironment": "node"
+        "testEnvironment": "node",
+        "collectCoverageFrom": [
+            "src/**/*.{js,flow}"
+        ]
     }
 }
