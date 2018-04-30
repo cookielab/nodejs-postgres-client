@@ -24,6 +24,7 @@
     "devDependencies": {
         "@cookielab.io/eslint-config-server": "0.0.6",
         "@cookielab.io/eslint-plugin-custom-rules": "0.0.2",
+        "@cookielab.io/stream-async-wrappers": "0.1.0",
         "babel-cli": "6.26.0",
         "babel-core": "6.26.0",
         "babel-eslint": "8.2.2",
