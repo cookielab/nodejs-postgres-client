@@ -50,10 +50,9 @@ test:
     - postgres
   image: cookielab/nodejs:8
   variables:
-    REDIS_HOST: localhost
     POSTGRES_PASSWORD: toor
     POSTGRES_DB: postgres_client
-    DATABASE_HOST: localhost
+    DATABASE_HOST: postgres
     DATABASE_USER: postgres
     DATABASE_PASSWORD: toor
     DATABASE_NAME: postgres_client
