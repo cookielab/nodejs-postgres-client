@@ -35,7 +35,7 @@ describe('client', () => {
         expect(databaseClient.query).toHaveBeenCalledTimes(3);
         const queryCalls = databaseClient.query.mock.calls;
         expect(queryCalls[0]).toMatchObject(['BEGIN']);
-        expect(queryCalls[1]).toMatchObject(['SELECT 42', undefined]); // undefined is passed by Connection
+        expect(queryCalls[1]).toMatchObject([{text: 'SELECT 42', values: undefined}]); // undefined is passed by Connection
         expect(queryCalls[2]).toMatchObject(['COMMIT']);
 
         // Releases client

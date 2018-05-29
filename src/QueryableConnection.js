@@ -4,20 +4,20 @@ import convertKeys from './convertKeys';
 import OneRowExpectedError from './errors/OneRowExpectedError';
 import QueryError from './errors/QueryError';
 import {SQL} from 'pg-async';
-import type {Client, Pool, QueryInput, Result} from 'pg';
+import type {Client, Pool, PoolClient, QueryConfig, ResultSet} from 'pg';
 import type {Row} from './Row';
 import type {SqlFragment} from 'pg-async';
 
 class Connection {
-    connection: Client | Pool;
+    connection: Client | Pool | PoolClient;
     debug: boolean;
 
-    constructor(connection: Client | Pool, debug: boolean = false): void {
+    constructor(connection: Client | Pool | PoolClient, debug: boolean = false): void {
         this.connection = connection;
         this.debug = debug;
     }
 
-    async findOne(input: QueryInput, values?: mixed[]): Promise<?Row> {
+    async findOne(input: QueryConfig | string, values?: mixed[]): Promise<?Row> {
         const result = await this.getRows(input, values);
 
         if (result.length > 1) {
@@ -44,7 +44,7 @@ class Connection {
         }
     }
 
-    insert(table: string, values: {[key: string]: any}): Promise<Result> { // eslint-disable-line flowtype/no-weak-types
+    insert(table: string, values: {[key: string]: any}): Promise<ResultSet> { // eslint-disable-line flowtype/no-weak-types
         const convertedKeys = convertKeys(values);
 
         return this.query(SQL`
@@ -52,13 +52,17 @@ class Connection {
         `);
     }
 
-    async query(input: QueryInput, values?: mixed[]): Promise<Result> {
+    async query(input: QueryConfig | string, values?: mixed[]): Promise<ResultSet> {
         const queryError = this.debug
             ? new QueryError(input, values) // capture stack trace
             : null;
 
+        const queryConfig = typeof input === 'string'
+            ? {text: input, values: values}
+            : input;
+
         try {
-            return await this.connection.query(input, values);
+            return await this.connection.query(queryConfig);
 
         } catch (databaseError) {
             if (queryError == null) {
@@ -71,7 +75,7 @@ class Connection {
         }
     }
 
-    async getRow(input: QueryInput, values?: mixed[]): Promise<Row> {
+    async getRow(input: QueryConfig | string, values?: mixed[]): Promise<Row> {
         const result = await this.getRows(input, values);
 
         if (result.length !== 1) {
@@ -81,7 +85,7 @@ class Connection {
         return result[0];
     }
 
-    async getRows(input: QueryInput, values?: mixed[]): Promise<Row[]> {
+    async getRows(input: QueryConfig | string, values?: mixed[]): Promise<Row[]> {
         const result = await this.query(input, values);
         return result.rows;
     }

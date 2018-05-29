@@ -1,7 +1,7 @@
 // @flow
 
 import QueryableConnection from './QueryableConnection';
-import type {Client} from 'pg';
+import type {Client, PoolClient} from 'pg';
 
 export type TransactionCallback<T> = (connection: Transaction<T>) => Promise<T>;
 export type NestedTransactionCallback<T, U> = (connection: Transaction<T>) => Promise<U>;
@@ -10,7 +10,7 @@ class Transaction<T> extends QueryableConnection {
     transactionCallback: TransactionCallback<T>;
     savepointCounter: number;
 
-    constructor(client: Client, debug: boolean, transactionCallback: TransactionCallback<T>): void {
+    constructor(client: Client | PoolClient, debug: boolean, transactionCallback: TransactionCallback<T>): void {
         super(client, debug);
         this.transactionCallback = transactionCallback;
         this.savepointCounter = 0;

@@ -39,7 +39,7 @@ describe('isUniqueViolation', () => {
         const error = new Error();
         error.code = '42';
 
-        const queryError = new QueryError('', []);
+        const queryError = new QueryError({text: '', values: []});
         queryError.causedBy = error;
 
         const result = isUniqueViolation(queryError);
@@ -58,7 +58,7 @@ describe('isUniqueViolation', () => {
     });
 
     it('returns false for a QueryError without caused by error without code', () => {
-        const queryError = new QueryError('', []);
+        const queryError = new QueryError({text: '', values: []});
 
         const result = isUniqueViolation(queryError);
         expect(result).toBe(false);
@@ -73,7 +73,7 @@ describe('isUniqueViolation', () => {
     });
 
     it('returns true for a QueryError without caused by error with a unique violation code', () => {
-        const queryError = new QueryError('', []);
+        const queryError = new QueryError({text: '', values: []});
         queryError.code = '23505';
 
         const result = isUniqueViolation(queryError);
