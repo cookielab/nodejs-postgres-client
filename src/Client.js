@@ -38,15 +38,15 @@ class Client extends QueryableConnection {
             const result = await transaction.perform();
 
             await client.query('COMMIT');
+            client.release();
 
             return result;
 
         } catch (error) {
             await client.query('ROLLBACK');
+            client.release(error);
             throw error;
 
-        } finally {
-            client.release();
         }
     }
 

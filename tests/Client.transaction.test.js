@@ -40,6 +40,9 @@ describe('client', () => {
 
         // Releases client
         expect(databaseClient.release).toHaveBeenCalledTimes(1);
+
+        // release without parameters for successful transaction
+        expect(databaseClient.release).toHaveBeenCalledWith();
     });
 
     it('begins and rollbacks an erroneous transaction', async () => {
@@ -63,6 +66,9 @@ describe('client', () => {
 
         // Releases client
         expect(databaseClient.release).toHaveBeenCalledTimes(1);
+
+        // release with thrown error for failed transaction
+        expect(databaseClient.release).toHaveBeenCalledWith(new Error('You shall not pass!'));
     });
 
     it('performs a nested transaction on the same connection as the parent-transaction', async () => {
