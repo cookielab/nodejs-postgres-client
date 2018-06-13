@@ -4,11 +4,12 @@ import pg from 'pg';
 import pgUtils from 'pg/lib/utils';
 import prepareJavascriptValue from './prepareJavascriptValue';
 import QueryableConnection from './QueryableConnection';
+import QueryStream from 'pg-query-stream';
 import {SQL} from 'pg-async';
 import Transaction from './Transaction';
 import TypeNotFoundError from './errors/TypeNotFoundError';
 import type {JavascriptType} from './prepareJavascriptValue';
-import type {Pool} from 'pg';
+import type {Pool, QueryConfig} from 'pg';
 import type {TransactionCallback} from './Transaction';
 
 export type DatabaseType = {
@@ -48,6 +49,20 @@ class Client extends QueryableConnection {
             throw error;
 
         }
+    }
+
+    async streamQuery(input: QueryConfig | string, values?: mixed[]): Promise<QueryStream> {
+        const query = new QueryStream(
+            typeof input === 'string' ? input : input.text,
+            typeof input === 'string' ? values : input.values
+        );
+
+        const client = await this.pool.connect();
+        const stream = client.query(query);
+        stream.on('error', client.release);
+        stream.on('end', client.release);
+
+        return stream;
     }
 
     registerJavascriptTypes(javascriptTypes: JavascriptType[]): void {
