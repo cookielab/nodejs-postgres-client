@@ -10,7 +10,7 @@
         "flow": "bin/flow || true",
         "test": "bin/jest",
         "check-all": "bin/check-all || true",
-        "prepublish": "bin/build"
+        "prepare": "bin/build"
     },
     "engines": {
         "node": ">=8.0.0"
