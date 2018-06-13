@@ -1,5 +1,5 @@
-// flow-typed signature: 361be5f65b17d2bfb7e2bc764b8a3a3a
-// flow-typed version: 14df781cee/pg_v7.x.x/flow_>=v0.28.x
+// flow-typed signature: bce25cf9995831e2ac1ebae0b4169cfc
+// flow-typed version: a175a2307f/pg_v7.x.x/flow_>=v0.28.x
 
 declare module pg {
   // Note: Currently There are some issues in Function overloading.
@@ -52,6 +52,8 @@ declare module pg {
     log: Function,
 
     // node-postgres Client ------
+    //database connection string to define some other config parameters
+    connectionString: string,
     //database user's name
     user: string,
     //name of database to connect

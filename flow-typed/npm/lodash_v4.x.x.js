@@ -1,5 +1,5 @@
-// flow-typed signature: 1fe037a598cc4d8c742e295dc8a14443
-// flow-typed version: 068b829015/lodash_v4.x.x/flow_>=v0.63.x
+// flow-typed signature: 190d9906d7da0b64940f05a1ac1340d3
+// flow-typed version: 8f269777c5/lodash_v4.x.x/flow_>=v0.63.x
 
 declare module "lodash" {
   declare type __CurriedFunction1<A, R, AA: A> = (...r: [AA]) => R;
@@ -853,8 +853,8 @@ declare module "lodash" {
         source: U
       ) => boolean | void
     ): boolean;
-    isNaN(value: Function | string | void | null | Object): false;
     isNaN(value: number): boolean;
+    isNaN(value: any): false;
     isNative(value: number | string | void | null | Object): false;
     isNative(value: any): boolean;
     isNil(value: void | null): true;
@@ -910,11 +910,11 @@ declare module "lodash" {
     divide(dividend: number, divisor: number): number;
     floor(number: number, precision?: number): number;
     max<T>(array: ?Array<T>): T;
-    maxBy<T>(array: ?Array<T>, iteratee?: Iteratee<T>): T;
+    maxBy<T>(array: ?$ReadOnlyArray<T>, iteratee?: Iteratee<T>): T;
     mean(array: Array<*>): number;
     meanBy<T>(array: Array<T>, iteratee?: Iteratee<T>): number;
     min<T>(array: ?Array<T>): T;
-    minBy<T>(array: ?Array<T>, iteratee?: Iteratee<T>): T;
+    minBy<T>(array: ?$ReadOnlyArray<T>, iteratee?: Iteratee<T>): T;
     multiply(multiplier: number, multiplicand: number): number;
     round(number: number, precision?: number): number;
     subtract(minuend: number, subtrahend: number): number;
@@ -1129,7 +1129,7 @@ declare module "lodash" {
     functions(object?: ?Object): Array<string>;
     functionsIn(object?: ?Object): Array<string>;
     get(
-      object?: ?Object | ?$ReadOnlyArray<any>,
+      object?: ?Object | ?$ReadOnlyArray<any> | void | null,
       path?: ?$ReadOnlyArray<string> | string,
       defaultValue?: any
     ): any;
@@ -2767,8 +2767,8 @@ declare module "lodash/fp" {
     forOwnRight(iteratee: OIteratee<*>, object: Object): Object;
     functions(object: Object): Array<string>;
     functionsIn(object: Object): Array<string>;
-    get(path: $ReadOnlyArray<string> | string): (object: Object | $ReadOnlyArray<any>) => any;
-    get(path: $ReadOnlyArray<string> | string, object: Object | $ReadOnlyArray<any>): any;
+    get(path: $ReadOnlyArray<string> | string): (object: Object | $ReadOnlyArray<any> | void | null) => any;
+    get(path: $ReadOnlyArray<string> | string, object: Object | $ReadOnlyArray<any> | void | null): any;
     prop(path: Array<string> | string): (object: Object | Array<any>) => any;
     prop(path: Array<string> | string, object: Object | Array<any>): any;
     path(path: Array<string> | string): (object: Object | Array<any>) => any;
@@ -2778,15 +2778,15 @@ declare module "lodash/fp" {
     ): ((
       path: Array<string> | string
     ) => (object: Object | Array<any>) => any) &
-      ((path: Array<string> | string, object: Object | Array<any>) => any);
+      ((path: Array<string> | string, object: Object | $ReadOnlyArray<any> | void | null) => any);
     getOr(
       defaultValue: any,
       path: Array<string> | string
-    ): (object: Object | Array<any>) => any;
+    ): (object: Object | $ReadOnlyArray<any> | void | null) => any;
     getOr(
       defaultValue: any,
       path: Array<string> | string,
-      object: Object | Array<any>
+      object: Object | $ReadOnlyArray<any> | void | null
     ): any;
     propOr(
       defaultValue: any
