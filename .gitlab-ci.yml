@@ -3,11 +3,12 @@ stages:
   - test
   - publish
 
+image: cookielab/nodejs:8
+
 yarn:
   stage: prepare
   tags:
     - docker
-  image: cookielab/nodejs:8
   script:
     - yarn
   cache:
@@ -26,7 +27,6 @@ lint:
     - docker
   dependencies:
     - yarn
-  image: cookielab/nodejs:8
   script:
     - bin/lint
 
@@ -36,7 +36,6 @@ flow:
     - docker
   dependencies:
     - yarn
-  image: cookielab/nodejs:8
   script:
     - bin/flow
 
@@ -48,7 +47,6 @@ test:
     - yarn
   services:
     - postgres
-  image: cookielab/nodejs:8
   variables:
     POSTGRES_PASSWORD: toor
     POSTGRES_DB: postgres_client
@@ -64,10 +62,10 @@ publish:
   stage: publish
   tags:
     - docker
-  image: cookielab/nodejs:8
+  before_script:
+    - echo "$NPMRC" > ~/.npmrc
   script:
-    - bin/build
-    - npm version "$CI_COMMIT_TAG" --no-git-tag-version
+    - npm version "$CI_COMMIT_TAG" --no-git-tag-version --allow-same-version
     - npm publish --verbose
   only:
     - tags
