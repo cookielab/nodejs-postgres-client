@@ -1,4 +1,7 @@
 bin/
+coverage/
+flow-typed/
+node_modules/
 src/
 tests/
 .babelrc
