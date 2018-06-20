@@ -2,6 +2,10 @@
     "name": "@cookielab.io/postgres-client",
     "version": "1.4.0",
     "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/cookielab/nodejs-postgres-client.git"
+    },
     "main": "lib/index.js",
     "scripts": {
         "build": "bin/build",
