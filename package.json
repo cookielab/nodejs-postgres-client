@@ -6,6 +6,10 @@
       "type": "git",
       "url": "https://github.com/cookielab/nodejs-postgres-client.git"
     },
+    "author": {
+        "name": "Pavel Kucera",
+        "url": "https://github.com/pavelkucera/"
+    },
     "main": "lib/index.js",
     "scripts": {
         "build": "bin/build",
