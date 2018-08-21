@@ -1,10 +1,10 @@
 // @flow
 
+import DatabaseReadStream from './streams/DatabaseReadStream';
 import pg from 'pg';
 import pgUtils from 'pg/lib/utils';
 import prepareJavascriptValue from './prepareJavascriptValue';
 import QueryableConnection from './QueryableConnection';
-import QueryStream from 'pg-query-stream';
 import {SQL} from 'pg-async';
 import Transaction from './Transaction';
 import TypeNotFoundError from './errors/TypeNotFoundError';
@@ -51,8 +51,8 @@ class Client extends QueryableConnection {
         }
     }
 
-    async streamQuery(input: QueryConfig | string, values?: mixed[]): Promise<QueryStream> {
-        const query = new QueryStream(
+    async streamQuery(input: QueryConfig | string, values?: mixed[]): Promise<DatabaseReadStream> {
+        const query = new DatabaseReadStream(
             typeof input === 'string' ? input : input.text,
             typeof input === 'string' ? values : input.values
         );
