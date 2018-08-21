@@ -23,16 +23,16 @@ class Transaction<T> extends QueryableConnection {
     async transaction<U>(transactionCallback: NestedTransactionCallback<T, U>): Promise<U> {
         const savepointName = `savepoint${++this.savepointCounter}`;
 
-        await this.connection.query(`SAVEPOINT ${savepointName}`);
+        await this.query(`SAVEPOINT ${savepointName}`);
 
         try {
             const result = await transactionCallback(this);
-            await this.connection.query(`RELEASE SAVEPOINT ${savepointName}`);
+            await this.query(`RELEASE SAVEPOINT ${savepointName}`);
 
             return result;
 
         } catch (error) {
-            await this.connection.query(`ROLLBACK TO SAVEPOINT ${savepointName}`);
+            await this.query(`ROLLBACK TO SAVEPOINT ${savepointName}`);
             throw error;
         }
     }

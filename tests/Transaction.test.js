@@ -27,8 +27,8 @@ describe('transaction', () => {
         expect(nestedTransactionCallback).toHaveBeenCalledWith(transaction);
 
         expect(client.query).toHaveBeenCalledTimes(2);
-        expect(client.query).toHaveBeenCalledWith('SAVEPOINT savepoint1');
-        expect(client.query).toHaveBeenCalledWith('RELEASE SAVEPOINT savepoint1');
+        expect(client.query).toHaveBeenCalledWith({text: 'SAVEPOINT savepoint1', values: undefined});
+        expect(client.query).toHaveBeenCalledWith({text: 'RELEASE SAVEPOINT savepoint1', values: undefined});
     });
 
     it('rollbacks a failing nested transaction callback upon perform', async () => {
@@ -50,7 +50,7 @@ describe('transaction', () => {
         expect(nestedTransactionCallback).toHaveBeenCalledWith(transaction);
 
         expect(client.query).toHaveBeenCalledTimes(2);
-        expect(client.query).toHaveBeenCalledWith('SAVEPOINT savepoint1');
-        expect(client.query).toHaveBeenCalledWith('ROLLBACK TO SAVEPOINT savepoint1');
+        expect(client.query).toHaveBeenCalledWith({text: 'SAVEPOINT savepoint1', values: undefined});
+        expect(client.query).toHaveBeenCalledWith({text: 'ROLLBACK TO SAVEPOINT savepoint1', values: undefined});
     });
 });
