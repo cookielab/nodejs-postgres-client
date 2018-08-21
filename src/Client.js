@@ -59,8 +59,16 @@ class Client extends QueryableConnection {
 
         const client = await this.pool.connect();
         const stream = client.query(query);
-        stream.on('error', client.release);
-        stream.on('end', client.release);
+
+        const clientReleaseListener = (error?: Error): void => {
+            stream.removeListener('error', clientReleaseListener);
+            stream.removeListener('end', clientReleaseListener);
+            stream.removeListener('close', clientReleaseListener);
+            client.release(error);
+        };
+        stream.once('error', clientReleaseListener);
+        stream.once('end', clientReleaseListener);
+        stream.once('close', clientReleaseListener);
 
         return stream;
     }
