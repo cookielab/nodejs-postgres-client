@@ -1,7 +1,7 @@
 // @flow
 
-import DatabaseReadStream from './streams/DatabaseReadStream';
-import QueryableConnection from './QueryableConnection';
+import type DatabaseReadStream from './streams/DatabaseReadStream';
+import type QueryableConnection from './QueryableConnection';
 import type {QueryConfig} from 'pg';
 
 export type Connection = QueryableConnection & {
