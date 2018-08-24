@@ -1,7 +1,8 @@
 // @flow
 
+import DatabaseReadStream from './streams/DatabaseReadStream';
 import QueryableConnection from './QueryableConnection';
-import type {Client, PoolClient} from 'pg';
+import type {Client, PoolClient, QueryConfig, QuerySubmittableConfig, ResultSet} from 'pg';
 
 export type TransactionCallback<T> = (connection: Transaction<T>) => Promise<T>;
 export type NestedTransactionCallback<T, U> = (connection: Transaction<T>) => Promise<U>;
@@ -9,11 +10,13 @@ export type NestedTransactionCallback<T, U> = (connection: Transaction<T>) => Pr
 class Transaction<T> extends QueryableConnection {
     transactionCallback: TransactionCallback<T>;
     savepointCounter: number;
+    isStreamInProgress: boolean;
 
     constructor(client: Client | PoolClient, debug: boolean, transactionCallback: TransactionCallback<T>): void {
         super(client, debug);
         this.transactionCallback = transactionCallback;
         this.savepointCounter = 0;
+        this.isStreamInProgress = false;
     }
 
     async perform(): Promise<T> {
@@ -23,18 +26,46 @@ class Transaction<T> extends QueryableConnection {
     async transaction<U>(transactionCallback: NestedTransactionCallback<T, U>): Promise<U> {
         const savepointName = `savepoint${++this.savepointCounter}`;
 
-        await this.connection.query(`SAVEPOINT ${savepointName}`);
+        await this.query(`SAVEPOINT ${savepointName}`);
 
         try {
             const result = await transactionCallback(this);
-            await this.connection.query(`RELEASE SAVEPOINT ${savepointName}`);
+            await this.query(`RELEASE SAVEPOINT ${savepointName}`);
 
             return result;
 
         } catch (error) {
-            await this.connection.query(`ROLLBACK TO SAVEPOINT ${savepointName}`);
+            await this.query(`ROLLBACK TO SAVEPOINT ${savepointName}`);
             throw error;
         }
+    }
+
+    async query<U: QuerySubmittableConfig>(input: QueryConfig | string | U, values?: mixed[]): Promise<ResultSet | U> {
+        if (this.isStreamInProgress) {
+            throw new Error('Cannot run another query while one is still in progress. Possibly opened cursor.');
+        }
+
+        return await super.query(input, values);
+    }
+
+    async streamQuery(input: QueryConfig | string, values?: mixed[]): Promise<DatabaseReadStream> {
+        const query = new DatabaseReadStream(
+            typeof input === 'string' ? input : input.text,
+            typeof input === 'string' ? values : input.values
+        );
+
+        // $FlowFixMe - Flow does not support polymorphic methods and their resolution based on input parameters
+        const stream = await this.query(query);
+
+        this.isStreamInProgress = true;
+        const resetStreamProgressHandler = (): void => {
+            this.isStreamInProgress = false;
+        };
+        stream.once('error', resetStreamProgressHandler);
+        stream.once('end', resetStreamProgressHandler);
+        stream.once('close', resetStreamProgressHandler);
+
+        return stream;
     }
 }
 
