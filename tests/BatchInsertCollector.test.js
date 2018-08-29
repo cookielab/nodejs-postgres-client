@@ -4,7 +4,7 @@ const createItem = (id) => ({id});
 
 describe('BatchInsertCollector', () => {
     const database = {
-        query: jest.fn(),
+        query: () => Promise.resolve({rowCount: 4}),
     };
 
     it('does not do anything on flush for no data', async () => {
@@ -86,5 +86,21 @@ describe('BatchInsertCollector', () => {
 
         collector.setBatchSize(1001);
         expect(collector.batchSize).toBe(1000);
+    });
+
+    it('calculates amount of inserted rows by query result not by added rows', async () => {
+        const collector = new BatchInsertCollector(database, 'account')
+            .setQuerySuffix('ON CONFLICT DO NOTHING');
+
+        await Promise.all([
+            collector.add(createItem(1)),
+            collector.add(createItem(2)),
+            collector.add(createItem(3)),
+            collector.add(createItem(4)),
+            collector.add(createItem(2)), // duplicate item
+        ]);
+
+        // Calling add method 5 times with a row but only 4 rows have been added because of duplicate key
+        expect(collector.getInsertedRowCount()).toBe(4);
     });
 });

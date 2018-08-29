@@ -9,6 +9,7 @@ const maxBatchInsert = 1000;
 class BatchInsertCollector {
     +connection: Connection;
     +tableName: string;
+    insertedRowCount: number;
     batchSize: number;
     querySuffix: string;
     rows: Row[];
@@ -18,6 +19,7 @@ class BatchInsertCollector {
     constructor(connection: Connection, tableName: string): void {
         this.connection = connection;
         this.tableName = tableName;
+        this.insertedRowCount = 0;
         this.batchSize = maxBatchInsert;
         this.querySuffix = '';
         this.rows = [];
@@ -36,6 +38,10 @@ class BatchInsertCollector {
     setQuerySuffix(querySuffix: string): BatchInsertCollector {
         this.querySuffix = querySuffix;
         return this;
+    }
+
+    getInsertedRowCount(): number {
+        return this.insertedRowCount;
     }
 
     async add(row: Row): Promise<void> {
@@ -61,7 +67,8 @@ class BatchInsertCollector {
                 this.batchPromiseHandlers = {resolve, reject};
             });
             try {
-                await this.connection.query(SQL`INSERT INTO $identifier${this.tableName} $multiInsert${rows} $raw${this.querySuffix}`);
+                const result = await this.connection.query(SQL`INSERT INTO $identifier${this.tableName} $multiInsert${rows} $raw${this.querySuffix}`);
+                this.insertedRowCount += result.rowCount;
                 batchPromiseHandlers.resolve();
             } catch (error) {
                 batchPromiseHandlers.reject(error);
