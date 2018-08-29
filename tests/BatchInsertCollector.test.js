@@ -16,6 +16,7 @@ describe('BatchInsertCollector', () => {
         expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(0);
 
         spyOnDatabaseQuery.mockReset();
+        spyOnDatabaseQuery.mockRestore();
     });
 
     it('calls a query every batch size addition or on flush', async () => {
@@ -39,6 +40,7 @@ describe('BatchInsertCollector', () => {
         expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(3);
 
         spyOnDatabaseQuery.mockReset();
+        spyOnDatabaseQuery.mockRestore();
     });
 
     it('calls a query on next tick', async () => {
@@ -50,6 +52,7 @@ describe('BatchInsertCollector', () => {
         expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(1);
 
         spyOnDatabaseQuery.mockReset();
+        spyOnDatabaseQuery.mockRestore();
     });
 
     it('supports query suffix', async () => {
@@ -72,6 +75,7 @@ describe('BatchInsertCollector', () => {
         });
 
         spyOnDatabaseQuery.mockReset();
+        spyOnDatabaseQuery.mockRestore();
     });
 
     it('use default batch size if less or equal to 0 or greater than MAX', () => {
