@@ -9,8 +9,8 @@ import type {Row} from './Row';
 import type {SqlFragment} from 'pg-async';
 
 class Connection {
-    connection: Client | Pool | PoolClient;
-    debug: boolean;
+    +connection: Client | Pool | PoolClient;
+    +debug: boolean;
 
     constructor(connection: Client | Pool | PoolClient, debug: boolean = false): void {
         this.connection = connection;

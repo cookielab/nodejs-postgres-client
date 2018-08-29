@@ -5,7 +5,7 @@ import {Writable} from 'stream';
 import type {Row} from '../Row';
 
 export default class DatabaseInsertStream extends Writable {
-    batchInsertCollector: BatchInsertCollector;
+    +batchInsertCollector: BatchInsertCollector;
     itemsCount: number;
     promises: Set<Promise<void>>;
 

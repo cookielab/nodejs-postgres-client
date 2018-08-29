@@ -7,8 +7,8 @@ import type {Row} from './Row';
 const maxBatchInsert = 1000;
 
 class BatchInsertCollector {
-    connection: Connection;
-    tableName: string;
+    +connection: Connection;
+    +tableName: string;
     batchSize: number;
     querySuffix: string;
     rows: Row[];

@@ -1,7 +1,7 @@
 // @flow
 
 class OneRowExpectedError extends Error {
-    count: number;
+    +count: number;
 
     constructor(count: number): void {
         super(`Exactly one row is expected, but the query returned "${count}" rows.`);
