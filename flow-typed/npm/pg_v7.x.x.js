@@ -1,5 +1,5 @@
-// flow-typed signature: bce25cf9995831e2ac1ebae0b4169cfc
-// flow-typed version: a175a2307f/pg_v7.x.x/flow_>=v0.28.x
+// flow-typed signature: 19ef65e9d513ad03294860e751b933fc
+// flow-typed version: 2493e23acc/pg_v7.x.x/flow_>=v0.28.x
 
 declare module pg {
   // Note: Currently There are some issues in Function overloading.
