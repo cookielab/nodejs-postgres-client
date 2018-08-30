@@ -5,6 +5,7 @@ import BatchInsertCollector from './BatchInsertCollector';
 import Client from './Client';
 import columnNamesTransformer from './transformers/columnNamesTransformer';
 import convertKeys from './convertKeys';
+import DatabaseInsertStream from './streams/DatabaseInsertStream';
 import isUniqueViolation from './isUniqueViolation';
 import multiInsertTransformer from './transformers/multiInsertTransformer';
 import OneRowExpectedError from './errors/OneRowExpectedError';
@@ -27,6 +28,7 @@ export {
     BatchInsertCollector,
     Client,
     convertKeys,
+    DatabaseInsertStream,
     isUniqueViolation,
     OneRowExpectedError,
     SQL,
