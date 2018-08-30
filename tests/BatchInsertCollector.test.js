@@ -4,7 +4,7 @@ const createItem = (id) => ({id});
 
 describe('BatchInsertCollector', () => {
     const database = {
-        query: jest.fn(),
+        query: () => Promise.resolve({rowCount: 4}),
     };
 
     it('does not do anything on flush for no data', async () => {
@@ -16,6 +16,7 @@ describe('BatchInsertCollector', () => {
         expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(0);
 
         spyOnDatabaseQuery.mockReset();
+        spyOnDatabaseQuery.mockRestore();
     });
 
     it('calls a query every batch size addition or on flush', async () => {
@@ -39,6 +40,7 @@ describe('BatchInsertCollector', () => {
         expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(3);
 
         spyOnDatabaseQuery.mockReset();
+        spyOnDatabaseQuery.mockRestore();
     });
 
     it('calls a query on next tick', async () => {
@@ -50,6 +52,7 @@ describe('BatchInsertCollector', () => {
         expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(1);
 
         spyOnDatabaseQuery.mockReset();
+        spyOnDatabaseQuery.mockRestore();
     });
 
     it('supports query suffix', async () => {
@@ -72,6 +75,7 @@ describe('BatchInsertCollector', () => {
         });
 
         spyOnDatabaseQuery.mockReset();
+        spyOnDatabaseQuery.mockRestore();
     });
 
     it('use default batch size if less or equal to 0 or greater than MAX', () => {
@@ -82,5 +86,21 @@ describe('BatchInsertCollector', () => {
 
         collector.setBatchSize(1001);
         expect(collector.batchSize).toBe(1000);
+    });
+
+    it('calculates amount of inserted rows by query result not by added rows', async () => {
+        const collector = new BatchInsertCollector(database, 'account')
+            .setQuerySuffix('ON CONFLICT DO NOTHING');
+
+        await Promise.all([
+            collector.add(createItem(1)),
+            collector.add(createItem(2)),
+            collector.add(createItem(3)),
+            collector.add(createItem(4)),
+            collector.add(createItem(2)), // duplicate item
+        ]);
+
+        // Calling add method 5 times with a row but only 4 rows have been added because of duplicate key
+        expect(collector.getInsertedRowCount()).toBe(4);
     });
 });

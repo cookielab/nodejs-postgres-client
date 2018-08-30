@@ -20,7 +20,7 @@ export type DatabaseType = {
 export type DatabaseTypeParser = (value: string) => ?any; // eslint-disable-line flowtype/no-weak-types
 
 class Client extends QueryableConnection {
-    pool: Pool;
+    +pool: Pool;
     javascriptTypesRegistered: boolean;
 
     constructor(pool: Pool, debug: boolean = false): void {

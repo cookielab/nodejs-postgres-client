@@ -5,7 +5,7 @@ import {Writable} from 'stream';
 import type {Row} from '../Row';
 
 export default class DatabaseInsertStream extends Writable {
-    batchInsertCollector: BatchInsertCollector;
+    +batchInsertCollector: BatchInsertCollector;
     itemsCount: number;
     promises: Set<Promise<void>>;
 
@@ -56,6 +56,9 @@ export default class DatabaseInsertStream extends Writable {
         try {
             this.promises.add(this.batchInsertCollector.flush());
             await Promise.all(this.getPromisesForAwait());
+            this.emit('inserting_finished', {
+                insertedRowCount: this.batchInsertCollector.getInsertedRowCount(),
+            });
             callback();
         } catch (error) {
             callback(error);

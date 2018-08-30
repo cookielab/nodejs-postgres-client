@@ -3,9 +3,9 @@
 import type {QueryConfig} from 'pg';
 
 class QueryError extends Error {
-    query: string;
+    +query: string;
+    +values: ?mixed[];
     causedBy: ?Error;
-    values: ?mixed[];
 
     constructor(input: QueryConfig | string, values?: mixed[]): void {
         super('Query execution failed.');

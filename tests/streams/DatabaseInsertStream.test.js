@@ -52,6 +52,31 @@ describe('DatabaseInsertStream', () => {
         expect(spyOnQuery).toHaveBeenCalledTimes(4);
     });
 
+    it('emits event "inserting_finished" with information about inserted rows', async () => {
+        const batchInsertCollector = new BatchInsertCollector(client, TABLE_NAME);
+        batchInsertCollector.setBatchSize(batchSize);
+        batchInsertCollector.setQuerySuffix('ON CONFLICT DO NOTHING');
+        const insertStream = new DatabaseInsertStream(batchInsertCollector);
+
+        const stream = new WritableStreamAsyncWriter(insertStream);
+        const eventPromise = new Promise((resolve) => {
+            insertStream.once('inserting_finished', (result) => {
+                expect(result).toHaveProperty('insertedRowCount', 7);
+                resolve();
+            });
+        });
+
+        for (let i = 0; i < 7; i++) {
+            await stream.write({id: i, name: 'Lorem Ipsum'});
+        }
+
+        // Add one extra row to make sure it will resolve conflicts correctly
+        await stream.write({id: 3, name: 'Lorem Ipsum'});
+
+        await stream.end();
+        await eventPromise;
+    });
+
     it('triggers error on wrong insert on batch flush', async () => {
         const batchInsertCollector = new BatchInsertCollector(client, TABLE_NAME);
         batchInsertCollector.setBatchSize(batchSize);
