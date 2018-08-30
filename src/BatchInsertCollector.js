@@ -1,13 +1,13 @@
 // @flow
 
 import SQL from 'pg-async/lib/sql';
-import type {Connection} from './Connection';
+import type {AsyncQueryable} from './AsyncQueryable';
 import type {Row} from './Row';
 
 const maxBatchInsert = 1000;
 
 class BatchInsertCollector {
-    +connection: Connection;
+    +connection: AsyncQueryable;
     +tableName: string;
     insertedRowCount: number;
     batchSize: number;
@@ -16,7 +16,7 @@ class BatchInsertCollector {
     batchPromise: Promise<void>;
     batchPromiseHandlers: {resolve: () => void, reject: (Error) => void};
 
-    constructor(connection: Connection, tableName: string): void {
+    constructor(connection: AsyncQueryable, tableName: string): void {
         this.connection = connection;
         this.tableName = tableName;
         this.insertedRowCount = 0;

@@ -4,11 +4,12 @@ import convertKeys from './convertKeys';
 import OneRowExpectedError from './errors/OneRowExpectedError';
 import QueryError from './errors/QueryError';
 import {SQL} from 'pg-async';
+import type {AsyncQueryable} from './AsyncQueryable';
 import type {Client, Pool, PoolClient, QueryConfig, ResultSet} from 'pg';
 import type {Row} from './Row';
 import type {SqlFragment} from 'pg-async';
 
-class Connection {
+class Connection implements AsyncQueryable {
     +connection: Client | Pool | PoolClient;
     +debug: boolean;
 
