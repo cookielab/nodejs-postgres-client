@@ -8,6 +8,7 @@ export type TransactionCallback<T> = (connection: Transaction<T>) => Promise<T>;
 export type NestedTransactionCallback<T, U> = (connection: Transaction<T>) => Promise<U>;
 
 class Transaction<T> extends QueryableConnection {
+    +connection: Client | PoolClient;
     +transactionCallback: TransactionCallback<T>;
     savepointCounter: number;
     isReadStreamInProgress: boolean;
