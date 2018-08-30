@@ -56,6 +56,9 @@ export default class DatabaseInsertStream extends Writable {
         try {
             this.promises.add(this.batchInsertCollector.flush());
             await Promise.all(this.getPromisesForAwait());
+            this.emit('inserting_finished', {
+                insertedRowCount: this.batchInsertCollector.getInsertedRowCount(),
+            });
             callback();
         } catch (error) {
             callback(error);
