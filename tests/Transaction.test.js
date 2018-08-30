@@ -24,7 +24,7 @@ describe('transaction', () => {
         await transaction.perform();
 
         expect(nestedTransactionCallback).toHaveBeenCalledTimes(1);
-        expect(nestedTransactionCallback).toHaveBeenCalledWith(transaction);
+        expect(nestedTransactionCallback).toHaveBeenCalledWith(new Transaction(client, false, nestedTransactionCallback, 1));
 
         expect(client.query).toHaveBeenCalledTimes(2);
         expect(client.query).toHaveBeenCalledWith({text: 'SAVEPOINT savepoint1', values: undefined});
@@ -47,7 +47,7 @@ describe('transaction', () => {
             .toEqual(new Error('Failing transaction'));
 
         expect(nestedTransactionCallback).toHaveBeenCalledTimes(1);
-        expect(nestedTransactionCallback).toHaveBeenCalledWith(transaction);
+        expect(nestedTransactionCallback).toHaveBeenCalledWith(new Transaction(client, false, nestedTransactionCallback, 1));
 
         expect(client.query).toHaveBeenCalledTimes(2);
         expect(client.query).toHaveBeenCalledWith({text: 'SAVEPOINT savepoint1', values: undefined});

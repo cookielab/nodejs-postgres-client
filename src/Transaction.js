@@ -5,7 +5,6 @@ import QueryableConnection from './QueryableConnection';
 import type {Client, PoolClient, QueryConfig, QuerySubmittableConfig, ResultSet} from 'pg';
 
 export type TransactionCallback<T> = (connection: Transaction<T>) => Promise<T>;
-export type NestedTransactionCallback<T, U> = (connection: Transaction<T>) => Promise<U>;
 
 class Transaction<T> extends QueryableConnection {
     +connection: Client | PoolClient;
@@ -13,10 +12,10 @@ class Transaction<T> extends QueryableConnection {
     savepointCounter: number;
     isReadStreamInProgress: boolean;
 
-    constructor(client: Client | PoolClient, debug: boolean, transactionCallback: TransactionCallback<T>): void {
+    constructor(client: Client | PoolClient, debug: boolean, transactionCallback: TransactionCallback<T>, savepointCounter: number = 0): void {
         super(client, debug);
         this.transactionCallback = transactionCallback;
-        this.savepointCounter = 0;
+        this.savepointCounter = savepointCounter;
         this.isReadStreamInProgress = false;
     }
 
@@ -24,13 +23,15 @@ class Transaction<T> extends QueryableConnection {
         return await this.transactionCallback(this);
     }
 
-    async transaction<U>(transactionCallback: NestedTransactionCallback<T, U>): Promise<U> {
+    async transaction<U>(transactionCallback: TransactionCallback<U>): Promise<U> {
         const savepointName = `savepoint${++this.savepointCounter}`;
 
         await this.query(`SAVEPOINT ${savepointName}`);
 
         try {
-            const result = await transactionCallback(this);
+            const transaction = new Transaction(this.connection, this.debug, transactionCallback, this.savepointCounter);
+            const result = await transaction.perform();
+
             await this.query(`RELEASE SAVEPOINT ${savepointName}`);
 
             return result;
