@@ -14,9 +14,9 @@ import TypeNotFoundError from './errors/TypeNotFoundError';
 import valueListTransformer from './transformers/valueListTransformer';
 
 SQL.registerTransform('columnNames', columnNamesTransformer);
-SQL.registerTransform('multiInsert', multiInsertTransformer);
 SQL.registerTransform('values', valueListTransformer);
 SQL.registerTransform('assign', assignmentTransformer);
+SQL.registerTransform('multiInsert', multiInsertTransformer);
 
 export type {Connection} from './Connection';
 export type {Row} from './Row';
