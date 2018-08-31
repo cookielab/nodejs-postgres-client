@@ -53,4 +53,43 @@ describe('transaction', () => {
         expect(client.query).toHaveBeenCalledWith({text: 'SAVEPOINT savepoint1', values: undefined});
         expect(client.query).toHaveBeenCalledWith({text: 'ROLLBACK TO SAVEPOINT savepoint1', values: undefined});
     });
+
+    it('succeeds check for unfinished insert streams from nested transaction', async () => {
+        const client = new (jest.fn())();
+        client.query = jest.fn();
+
+        const nestedTransactionCallback = jest.fn((transaction) => {
+            const stream = transaction.insertStream('not_existing_table');
+            stream.emit('finish');
+        });
+
+        const transaction = new Transaction(client, false, async (connection) => {
+            await connection.transaction(nestedTransactionCallback);
+        });
+        await transaction.perform();
+
+        expect(client.query).toHaveBeenCalledTimes(2);
+        expect(client.query).toHaveBeenCalledWith({text: 'SAVEPOINT savepoint1', values: undefined});
+        expect(client.query).toHaveBeenCalledWith({text: 'RELEASE SAVEPOINT savepoint1', values: undefined});
+    });
+
+    it('fails check for unfinished insert streams from nested transaction', async () => {
+        const client = new (jest.fn())();
+        client.query = jest.fn();
+
+        const nestedTransactionCallback = jest.fn((transaction) => {
+            transaction.insertStream('not_existing_table', '', 1000);
+        });
+
+        const transaction = new Transaction(client, false, async (connection) => {
+            await connection.transaction(nestedTransactionCallback);
+        });
+        await expect(transaction.perform())
+            .rejects
+            .toEqual(new Error('Cannot commit transaction (or release savepoint) because there is 1 unfinished insert streams.'));
+
+        expect(client.query).toHaveBeenCalledTimes(2);
+        expect(client.query).toHaveBeenCalledWith({text: 'SAVEPOINT savepoint1', values: undefined});
+        expect(client.query).toHaveBeenCalledWith({text: 'ROLLBACK TO SAVEPOINT savepoint1', values: undefined});
+    });
 });

@@ -38,6 +38,8 @@ class Client extends QueryableConnection {
             const transaction = new Transaction(client, this.debug, transactionCallback);
             const result = await transaction.perform();
 
+            transaction.validateUnfinishedInsertStreams();
+
             await client.query('COMMIT');
             client.release();
 

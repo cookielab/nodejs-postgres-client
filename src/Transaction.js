@@ -1,5 +1,6 @@
 // @flow
 
+import DatabaseInsertStream from './streams/DatabaseInsertStream';
 import DatabaseReadStream from './streams/DatabaseReadStream';
 import QueryableConnection from './QueryableConnection';
 import type {Client, PoolClient, QueryConfig, QuerySubmittableConfig, ResultSet} from 'pg';
@@ -11,12 +12,14 @@ class Transaction<T> extends QueryableConnection {
     +transactionCallback: TransactionCallback<T>;
     savepointCounter: number;
     isReadStreamInProgress: boolean;
+    insertStreamInProgressCount: number;
 
     constructor(client: Client | PoolClient, debug: boolean, transactionCallback: TransactionCallback<T>, savepointCounter: number = 0): void {
         super(client, debug);
         this.transactionCallback = transactionCallback;
         this.savepointCounter = savepointCounter;
         this.isReadStreamInProgress = false;
+        this.insertStreamInProgressCount = 0;
     }
 
     async perform(): Promise<T> {
@@ -31,6 +34,8 @@ class Transaction<T> extends QueryableConnection {
         try {
             const transaction = new Transaction(this.connection, this.debug, transactionCallback, this.savepointCounter);
             const result = await transaction.perform();
+
+            transaction.validateUnfinishedInsertStreams();
 
             await this.query(`RELEASE SAVEPOINT ${savepointName}`);
 
@@ -66,6 +71,23 @@ class Transaction<T> extends QueryableConnection {
         stream.once('error', resetStreamProgressHandler);
         stream.once('end', resetStreamProgressHandler);
         stream.once('close', resetStreamProgressHandler);
+
+        return stream;
+    }
+
+    validateUnfinishedInsertStreams(): void {
+        if (this.insertStreamInProgressCount > 0) {
+            throw new Error(`Cannot commit transaction (or release savepoint) because there is ${this.insertStreamInProgressCount} unfinished insert streams.`);
+        }
+    }
+
+    insertStream(tableName: string, querySuffix?: string, batchSize?: number): DatabaseInsertStream {
+        const stream = super.insertStream(tableName, querySuffix, batchSize);
+
+        stream.once('finish', (): void => {
+            this.insertStreamInProgressCount--;
+        });
+        this.insertStreamInProgressCount++;
 
         return stream;
     }
