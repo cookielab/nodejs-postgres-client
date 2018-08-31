@@ -1,9 +1,7 @@
-import columnNamesTransformer from '../../src/transformers/columnNamesTransformer';
 import {SQL} from 'pg-async';
 import valueListTransformer from '../../src/transformers/valueListTransformer';
 import valuesTableTransformer from '../../src/transformers/valuesTableTransformer';
 
-SQL.registerTransform('columnNames', columnNamesTransformer);
 SQL.registerTransform('values', valueListTransformer);
 
 describe('values table transformer', () => {
