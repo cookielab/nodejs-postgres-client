@@ -38,7 +38,6 @@
         "node": ">=8.0.0"
     },
     "dependencies": {
-        "lodash": "^4.17.5",
         "pg-async": "^3.1.0",
         "pg-query-stream": "^1.1.1"
     },
