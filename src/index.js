@@ -6,6 +6,7 @@ import Client from './Client';
 import columnNamesTransformer from './transformers/columnNamesTransformer';
 import convertKeys from './convertKeys';
 import DatabaseInsertStream from './streams/DatabaseInsertStream';
+import insertTransformer from './transformers/insertTransformer';
 import isUniqueViolation from './isUniqueViolation';
 import multiInsertTransformer from './transformers/multiInsertTransformer';
 import OneRowExpectedError from './errors/OneRowExpectedError';
@@ -20,6 +21,10 @@ SQL.registerTransform('values', valueListTransformer);
 SQL.registerTransform('valuesTable', valuesTableTransformer);
 SQL.registerTransform('assign', assignmentTransformer);
 SQL.registerTransform('multiInsert', multiInsertTransformer);
+
+delete SQL._transforms.insert; // eslint-disable-line no-underscore-dangle
+delete SQL._transforms.insert_object; // eslint-disable-line no-underscore-dangle
+SQL.registerTransform('insert_object', 'insert', insertTransformer);
 
 export type {Connection} from './Connection';
 export type {Row} from './Row';
