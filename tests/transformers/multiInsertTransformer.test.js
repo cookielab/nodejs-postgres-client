@@ -2,9 +2,11 @@ import columnNamesTransformer from '../../src/transformers/columnNamesTransforme
 import multiInsertTransformer from '../../src/transformers/multiInsertTransformer';
 import {SQL} from 'pg-async';
 import valueListTransformer from '../../src/transformers/valueListTransformer';
+import valuesTableTransformer from '../../src/transformers/valuesTableTransformer';
 
 SQL.registerTransform('columnNames', columnNamesTransformer);
 SQL.registerTransform('values', valueListTransformer);
+SQL.registerTransform('valuesTable', valuesTableTransformer);
 
 describe('multi insert transformer', () => {
     it('prepares insert for multiple rows', () => {

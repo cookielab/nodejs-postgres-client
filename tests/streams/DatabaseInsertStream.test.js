@@ -6,12 +6,14 @@ import DatabaseInsertStream from '../../src/streams/DatabaseInsertStream';
 import multiInsertTransformer from '../../src/transformers/multiInsertTransformer';
 import {SQL} from 'pg-async';
 import valueListTransformer from '../../src/transformers/valueListTransformer';
+import valuesTableTransformer from '../../src/transformers/valuesTableTransformer';
 import {WritableStreamAsyncWriter} from '@cookielab.io/stream-async-wrappers';
 
 const TABLE_NAME = 'test_database_insert_stream';
 
 SQL.registerTransform('columnNames', columnNamesTransformer);
 SQL.registerTransform('values', valueListTransformer);
+SQL.registerTransform('valuesTable', valuesTableTransformer);
 SQL.registerTransform('multiInsert', multiInsertTransformer);
 
 describe('DatabaseInsertStream', () => {
