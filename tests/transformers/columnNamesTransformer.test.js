@@ -1,6 +1,6 @@
 import columnNamesTransformer from '../../src/transformers/columnNamesTransformer';
 
-describe('column name transformer', () => {
+describe('column names transformer', () => {
     it('joins and escapes column names', () => {
         const result = columnNamesTransformer([
             'column',
