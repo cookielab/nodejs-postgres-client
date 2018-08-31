@@ -12,9 +12,11 @@ import {SQL} from 'pg-async';
 import {SqlFragment} from 'pg-async/lib/sql';
 import TypeNotFoundError from './errors/TypeNotFoundError';
 import valueListTransformer from './transformers/valueListTransformer';
+import valuesTableTransformer from './transformers/valuesTableTransformer';
 
 SQL.registerTransform('columnNames', columnNamesTransformer);
 SQL.registerTransform('values', valueListTransformer);
+SQL.registerTransform('valuesTable', valuesTableTransformer);
 SQL.registerTransform('assign', assignmentTransformer);
 SQL.registerTransform('multiInsert', multiInsertTransformer);
 
