@@ -1,10 +1,12 @@
 import columnNamesTransformer from '../../src/transformers/columnNamesTransformer';
+import columnNameTransformer from '../../src/transformers/columnNameTransformer';
 import insertTransformer from '../../src/transformers/insertTransformer';
 import multiInsertTransformer from '../../src/transformers/multiInsertTransformer';
 import {SQL} from 'pg-async';
 import valueListTransformer from '../../src/transformers/valueListTransformer';
 import valuesTableTransformer from '../../src/transformers/valuesTableTransformer';
 
+SQL.registerTransform('columnName', columnNameTransformer);
 SQL.registerTransform('columnNames', columnNamesTransformer);
 SQL.registerTransform('values', valueListTransformer);
 SQL.registerTransform('valuesTable', valuesTableTransformer);

@@ -1,6 +1,7 @@
 import BatchInsertCollector from '../../src/BatchInsertCollector';
 import Client from '../../src/Client';
 import columnNamesTransformer from '../../src/transformers/columnNamesTransformer';
+import columnNameTransformer from '../../src/transformers/columnNameTransformer';
 import {createPool} from '../bootstrap';
 import DatabaseInsertStream from '../../src/streams/DatabaseInsertStream';
 import multiInsertTransformer from '../../src/transformers/multiInsertTransformer';
@@ -11,6 +12,7 @@ import {WritableStreamAsyncWriter} from '@cookielab.io/stream-async-wrappers';
 
 const TABLE_NAME = 'test_database_insert_stream';
 
+SQL.registerTransform('columnName', columnNameTransformer);
 SQL.registerTransform('columnNames', columnNamesTransformer);
 SQL.registerTransform('values', valueListTransformer);
 SQL.registerTransform('valuesTable', valuesTableTransformer);

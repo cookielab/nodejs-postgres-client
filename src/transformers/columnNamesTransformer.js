@@ -6,7 +6,7 @@ import sqlFragmentMapper from './sqlFragmentMapper';
 const columnNamesTransformer = (columns: string[]): SqlFragment => {
     return sqlFragmentMapper(
         columns,
-        (column: string) => SQL`$identifier${column}`,
+        (column: string) => SQL`$columnName${column}`,
         ', '
     );
 };
