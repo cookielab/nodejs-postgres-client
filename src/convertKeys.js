@@ -1,10 +1,9 @@
 // @flow
 
 import {mapKeys, snakeCase} from 'lodash';
+import type {Row} from './Row';
 
-type ValueObject = {[key: string]: any}; // eslint-disable-line flowtype/no-weak-types
-
-const convertKeys = (values: ValueObject): ValueObject => {
+const convertKeys = (values: Row): Row => {
     const mapper = (value: mixed, key: string): string => snakeCase(key);
     return mapKeys(values, mapper);
 };
