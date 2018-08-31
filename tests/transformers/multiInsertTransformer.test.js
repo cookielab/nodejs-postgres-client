@@ -7,7 +7,7 @@ SQL.registerTransform('columnNames', columnNamesTransformer);
 SQL.registerTransform('values', valueListTransformer);
 
 describe('multi insert transformer', () => {
-    it('prepares insert for multiple row', () => {
+    it('prepares insert for multiple rows', () => {
         const sql = multiInsertTransformer([
             {id: 'id1', name: 'name1', integer: 1},
             {id: 'id2', name: 'name2', integer: 2},
@@ -18,5 +18,11 @@ describe('multi insert transformer', () => {
             'id2', 'name2', 2,
         ]);
         expect(sql.text.trim()).toMatch('("id", "name", "integer") VALUES ($1, $2, $3),\n($4, $5, $6)');
+    });
+
+    it('fails preparation of insert for empty rows', () => {
+        expect(() => {
+            multiInsertTransformer([]);
+        }).toThrow(new Error('Cannot format multi insert for no rows.'));
     });
 });

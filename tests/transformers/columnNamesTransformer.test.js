@@ -9,4 +9,10 @@ describe('column name transformer', () => {
 
         expect(result.toString()).toBe('"column", "another"');
     });
+
+    it('does nothing for empty column names', () => {
+        const result = columnNamesTransformer([]);
+
+        expect(result.toString()).toBe('');
+    });
 });
