@@ -8,16 +8,16 @@ describe('assignment transformer', () => {
             flag: true,
         });
 
-        expect(result.values).toMatchObject([
+        expect(result.text.trim()).toBe('"long_key" = $1,\n"number" = $2,\n"flag" = $3');
+        expect(result.values).toEqual([
             'string value', 12.4, true,
         ]);
-        expect(result.text.trim()).toMatch('"long_key" = $1,\n"number" = $2,\n"flag" = $3');
     });
 
     it('does nothing for empty object', () => {
         const result = assignmentTransformer({});
 
-        expect(result.values).toMatchObject([]);
-        expect(result.text.trim()).toMatch('');
+        expect(result.text.trim()).toBe('');
+        expect(result.values).toEqual([]);
     });
 });

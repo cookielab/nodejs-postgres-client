@@ -8,18 +8,18 @@ describe('value list transformer', () => {
             true,
         ]);
 
-        expect(sql.values).toMatchObject([
+        expect(sql.text.trim()).toBe('$1, $2, $3');
+        expect(sql.values).toEqual([
             'string',
             123,
             true,
         ]);
-        expect(sql.text.trim()).toMatch('$1, $2, $3');
     });
 
     it('does nothing for empty values', () => {
         const sql = valueListTransformer([]);
 
-        expect(sql.values).toMatchObject([]);
-        expect(sql.text.trim()).toMatch('');
+        expect(sql.text.trim()).toBe('');
+        expect(sql.values).toEqual([]);
     });
 });

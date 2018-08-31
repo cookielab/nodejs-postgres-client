@@ -17,11 +17,11 @@ describe('multi insert transformer', () => {
             {id: 'id2', name: 'name2', integer: 2},
         ]);
 
-        expect(sql.values).toMatchObject([
+        expect(sql.text.trim()).toBe('("id", "name", "integer") VALUES ($1, $2, $3),\n($4, $5, $6)');
+        expect(sql.values).toEqual([
             'id1', 'name1', 1,
             'id2', 'name2', 2,
         ]);
-        expect(sql.text.trim()).toMatch('("id", "name", "integer") VALUES ($1, $2, $3),\n($4, $5, $6)');
     });
 
     it('fails preparation of insert for empty rows', () => {

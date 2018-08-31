@@ -16,9 +16,9 @@ describe('insert transformer', () => {
     it('prepares insert for one row', () => {
         const sql = insertTransformer({id: 'id1', name: 'name1', integer: 1});
 
-        expect(sql.values).toMatchObject([
+        expect(sql.text.trim()).toBe('("id", "name", "integer") VALUES ($1, $2, $3)');
+        expect(sql.values).toEqual([
             'id1', 'name1', 1,
         ]);
-        expect(sql.text.trim()).toMatch('("id", "name", "integer") VALUES ($1, $2, $3)');
     });
 });

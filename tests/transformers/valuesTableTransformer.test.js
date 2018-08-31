@@ -11,17 +11,17 @@ describe('values table transformer', () => {
             {id: 'id2', name: 'name2', integer: 2},
         ]);
 
-        expect(sql.values).toMatchObject([
+        expect(sql.text.trim()).toBe('($1, $2, $3),\n($4, $5, $6)');
+        expect(sql.values).toEqual([
             'id1', 'name1', 1,
             'id2', 'name2', 2,
         ]);
-        expect(sql.text.trim()).toMatch('($1, $2, $3),\n($4, $5, $6)');
     });
 
     it('prepares values table for empty rows', () => {
         const sql = valuesTableTransformer([]);
 
-        expect(sql.values).toMatchObject([]);
-        expect(sql.text.trim()).toMatch('');
+        expect(sql.text.trim()).toBe('');
+        expect(sql.values).toEqual([]);
     });
 });

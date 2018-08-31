@@ -11,12 +11,14 @@ describe('column names transformer', () => {
             'another',
         ]);
 
-        expect(result.toString()).toBe('"column", "another"');
+        expect(result.text.trim()).toBe('"column", "another"');
+        expect(result.values).toEqual([]);
     });
 
     it('does nothing for empty column names', () => {
         const result = columnNamesTransformer([]);
 
-        expect(result.toString()).toBe('');
+        expect(result.text.trim()).toBe('');
+        expect(result.values).toEqual([]);
     });
 });
