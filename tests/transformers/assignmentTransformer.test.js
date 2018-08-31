@@ -1,9 +1,13 @@
 import assignmentTransformer from '../../src/transformers/assignmentTransformer';
+import columnNameTransformer from '../../src/transformers/columnNameTransformer';
+import {SQL} from 'pg-async';
+
+SQL.registerTransform('columnName', columnNameTransformer);
 
 describe('assignment transformer', () => {
     it('joins and escapes column names and its values', () => {
         const result = assignmentTransformer({
-            longKey: 'string value',
+            long_key: 'string value',
             number: 12.4,
             flag: true,
         });

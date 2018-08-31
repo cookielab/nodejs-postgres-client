@@ -1,7 +1,6 @@
 // @flow
 
 import BatchInsertCollector from './BatchInsertCollector';
-import convertKeys from './convertKeys';
 import DatabaseInsertStream from './streams/DatabaseInsertStream';
 import OneRowExpectedError from './errors/OneRowExpectedError';
 import QueryError from './errors/QueryError';
@@ -47,11 +46,9 @@ class Connection implements AsyncQueryable {
         }
     }
 
-    insert(table: string, values: {[key: string]: any}): Promise<ResultSet> { // eslint-disable-line flowtype/no-weak-types
-        const convertedKeys = convertKeys(values);
-
+    insert(table: string, values: Row): Promise<ResultSet> {
         return this.query(SQL`
-            INSERT INTO $identifier${table} $insert${convertedKeys}
+            INSERT INTO $identifier${table} $insert${values}
         `);
     }
 
