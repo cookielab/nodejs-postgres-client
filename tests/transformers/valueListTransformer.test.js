@@ -15,4 +15,11 @@ describe('value list transformer', () => {
         ]);
         expect(sql.text.trim()).toMatch('$1, $2, $3');
     });
+
+    it('does nothing for empty values', () => {
+        const sql = valueListTransformer([]);
+
+        expect(sql.values).toMatchObject([]);
+        expect(sql.text.trim()).toMatch('');
+    });
 });

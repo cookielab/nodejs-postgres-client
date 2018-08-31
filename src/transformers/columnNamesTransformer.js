@@ -1,14 +1,14 @@
 // @flow
 
 import SQL, {SqlFragment} from 'pg-async/lib/sql';
+import sqlFragmentMapper from './sqlFragmentMapper';
 
 const columnNameTransformer = (columns: string[]): SqlFragment => {
-    const names = columns.map((column: string) => SQL`$identifier${column}`);
-
-    const glue = names.map((): string => ', ');
-    glue[0] = ''; // there is no comma in front of the first element
-
-    return new SqlFragment(glue, names);
+    return sqlFragmentMapper(
+        columns,
+        (column: string) => SQL`$identifier${column}`,
+        ', '
+    );
 };
 
 export default columnNameTransformer;

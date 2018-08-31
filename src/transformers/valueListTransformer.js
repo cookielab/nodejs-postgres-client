@@ -1,16 +1,17 @@
 // @flow
 
 import SQL, {SqlFragment} from 'pg-async/lib/sql';
+import sqlFragmentMapper from './sqlFragmentMapper';
 
-type valueType = string | number | boolean;
+type BaseType = string | number | boolean | Date | null;
+type RowValueType = BaseType | BaseType[];
 
-const valueListTransformer = (values: valueType[]): SqlFragment => {
-    const sqlValues = values.map((value: valueType) => SQL`${value}`);
-
-    const parts = sqlValues.map((): string => ', ');
-    parts[0] = ''; // there is no comma in front of the first value
-
-    return new SqlFragment(parts, sqlValues);
+const valueListTransformer = (values: RowValueType[]): SqlFragment => {
+    return sqlFragmentMapper(
+        values,
+        (value: RowValueType) => SQL`${value}`,
+        ', '
+    );
 };
 
 export default valueListTransformer;

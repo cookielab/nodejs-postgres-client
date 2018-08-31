@@ -13,4 +13,11 @@ describe('assignment transformer', () => {
         ]);
         expect(result.text.trim()).toMatch('"long_key" = $1,\n"number" = $2,\n"flag" = $3');
     });
+
+    it('does nothing for empty object', () => {
+        const result = assignmentTransformer({});
+
+        expect(result.values).toMatchObject([]);
+        expect(result.text.trim()).toMatch('');
+    });
 });
