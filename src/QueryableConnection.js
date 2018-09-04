@@ -1,14 +1,17 @@
 // @flow
 
+import BatchInsertCollector from './BatchInsertCollector';
 import convertKeys from './convertKeys';
+import DatabaseInsertStream from './streams/DatabaseInsertStream';
 import OneRowExpectedError from './errors/OneRowExpectedError';
 import QueryError from './errors/QueryError';
 import {SQL} from 'pg-async';
+import type {AsyncQueryable} from './AsyncQueryable';
 import type {Client, Pool, PoolClient, QueryConfig, ResultSet} from 'pg';
 import type {Row} from './Row';
 import type {SqlFragment} from 'pg-async';
 
-class Connection {
+class Connection implements AsyncQueryable {
     +connection: Client | Pool | PoolClient;
     +debug: boolean;
 
@@ -88,6 +91,18 @@ class Connection {
     async getRows(input: QueryConfig | string, values?: mixed[]): Promise<Row[]> {
         const result = await this.query(input, values);
         return result.rows;
+    }
+
+    insertStream(tableName: string, querySuffix?: string, batchSize?: number): DatabaseInsertStream {
+        const collector = new BatchInsertCollector(this, tableName);
+        if (querySuffix != null) {
+            collector.setQuerySuffix(querySuffix);
+        }
+        if (batchSize != null) {
+            collector.setBatchSize(batchSize);
+        }
+
+        return new DatabaseInsertStream(collector);
     }
 }
 
