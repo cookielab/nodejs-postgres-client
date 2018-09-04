@@ -10,7 +10,6 @@ import insertTransformer from './transformers/insertTransformer';
 import isUniqueViolation from './isUniqueViolation';
 import multiInsertTransformer from './transformers/multiInsertTransformer';
 import OneRowExpectedError from './errors/OneRowExpectedError';
-import registerColumnNameMapper from './registerColumnNameMapper';
 import {SQL} from 'pg-async';
 import {SqlFragment} from 'pg-async/lib/sql';
 import TypeNotFoundError from './errors/TypeNotFoundError';
@@ -37,7 +36,6 @@ export {
     DatabaseInsertStream,
     isUniqueViolation,
     OneRowExpectedError,
-    registerColumnNameMapper,
     SQL,
     SqlFragment,
     TypeNotFoundError,

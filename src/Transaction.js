@@ -7,6 +7,16 @@ import type {Client, PoolClient, QueryConfig, QuerySubmittableConfig, ResultSet}
 
 export type TransactionCallback<T> = (connection: Transaction<T>) => Promise<T>;
 
+type TransactionOptions = {
+    debug?: boolean,
+    savepointCounter?: number,
+};
+
+const OPTIONS_DEFAULT = {
+    debug: false,
+    savepointCounter: 0,
+};
+
 class Transaction<T> extends QueryableConnection {
     +connection: Client | PoolClient;
     +transactionCallback: TransactionCallback<T>;
@@ -14,10 +24,10 @@ class Transaction<T> extends QueryableConnection {
     isReadStreamInProgress: boolean;
     insertStreamInProgressCount: number;
 
-    constructor(client: Client | PoolClient, debug: boolean, transactionCallback: TransactionCallback<T>, savepointCounter: number = 0): void {
-        super(client, debug);
+    constructor(client: Client | PoolClient, transactionCallback: TransactionCallback<T>, options: TransactionOptions = OPTIONS_DEFAULT): void {
+        super(client, options);
         this.transactionCallback = transactionCallback;
-        this.savepointCounter = savepointCounter;
+        this.savepointCounter = options.savepointCounter != null ? options.savepointCounter : 0;
         this.isReadStreamInProgress = false;
         this.insertStreamInProgressCount = 0;
     }
@@ -32,7 +42,10 @@ class Transaction<T> extends QueryableConnection {
         await this.query(`SAVEPOINT ${savepointName}`);
 
         try {
-            const transaction = new Transaction(this.connection, this.debug, transactionCallback, this.savepointCounter);
+            const transaction = new Transaction(this.connection, transactionCallback, {
+                debug: this.debug,
+                savepointCounter: this.savepointCounter,
+            });
             const result = await transaction.perform();
 
             transaction.validateUnfinishedInsertStreams();

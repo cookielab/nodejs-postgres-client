@@ -10,13 +10,21 @@ import type {Client, Pool, PoolClient, QueryConfig, ResultSet} from 'pg';
 import type {Row} from './Row';
 import type {SqlFragment} from 'pg-async';
 
+type ConnectionOptions = {
+    debug?: boolean,
+};
+
+const OPTIONS_DEFAULT = {
+    debug: false,
+};
+
 class Connection implements AsyncQueryable {
     +connection: Client | Pool | PoolClient;
     +debug: boolean;
 
-    constructor(connection: Client | Pool | PoolClient, debug: boolean = false): void {
+    constructor(connection: Client | Pool | PoolClient, options: ConnectionOptions = OPTIONS_DEFAULT): void {
         this.connection = connection;
-        this.debug = debug;
+        this.debug = options.debug === true;
     }
 
     async findOne(input: QueryConfig | string, values?: mixed[]): Promise<?Row> {

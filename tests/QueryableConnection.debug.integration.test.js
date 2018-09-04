@@ -34,7 +34,9 @@ describe('invalid query in debug mode', () => {
     let client = null;
 
     beforeAll(() => {
-        client = new Client(createPool(), true);
+        client = new Client(createPool(), {
+            debug: true,
+        });
     });
 
     afterAll(async () => {

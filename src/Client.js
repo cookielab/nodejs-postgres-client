@@ -5,9 +5,11 @@ import pg from 'pg';
 import pgUtils from 'pg/lib/utils';
 import prepareJavascriptValue from './prepareJavascriptValue';
 import QueryableConnection from './QueryableConnection';
+import registerColumnNameMapper from './registerColumnNameMapper';
 import {SQL} from 'pg-async';
 import Transaction from './Transaction';
 import TypeNotFoundError from './errors/TypeNotFoundError';
+import type {ColumnNameMapper} from './registerColumnNameMapper';
 import type {JavascriptType} from './prepareJavascriptValue';
 import type {Pool, QueryConfig} from 'pg';
 import type {TransactionCallback} from './Transaction';
@@ -19,14 +21,30 @@ export type DatabaseType = {
 
 export type DatabaseTypeParser = (value: string) => ?any; // eslint-disable-line flowtype/no-weak-types
 
+type ClientOptions = {
+    debug?: boolean,
+    javascriptTypes?: JavascriptType[],
+    columnNameMapper?: ColumnNameMapper,
+};
+
+const OPTIONS_DEFAULT = {
+    debug: false,
+};
+
 class Client extends QueryableConnection {
     +pool: Pool;
-    javascriptTypesRegistered: boolean;
 
-    constructor(pool: Pool, debug: boolean = false): void {
-        super(pool, debug);
+    constructor(pool: Pool, options: ClientOptions = OPTIONS_DEFAULT): void {
+        super(pool, options);
         this.pool = pool;
-        this.javascriptTypesRegistered = false;
+
+        if (options.javascriptTypes != null) {
+            const originalPrepareValue = pgUtils.prepareValue;
+            pgUtils.prepareValue = prepareJavascriptValue.bind(null, originalPrepareValue, options.javascriptTypes);
+        }
+        if (options.columnNameMapper) {
+            registerColumnNameMapper(options.columnNameMapper);
+        }
     }
 
     async transaction<T>(transactionCallback: TransactionCallback<T>): Promise<T> {
@@ -35,7 +53,9 @@ class Client extends QueryableConnection {
         try {
             await client.query('BEGIN');
 
-            const transaction = new Transaction(client, this.debug, transactionCallback);
+            const transaction = new Transaction(client, transactionCallback, {
+                debug: this.debug,
+            });
             const result = await transaction.perform();
 
             transaction.validateUnfinishedInsertStreams();
@@ -49,7 +69,6 @@ class Client extends QueryableConnection {
             await client.query('ROLLBACK');
             client.release(error);
             throw error;
-
         }
     }
 
@@ -73,18 +92,6 @@ class Client extends QueryableConnection {
         stream.once('close', clientReleaseListener);
 
         return stream;
-    }
-
-    registerJavascriptTypes(javascriptTypes: JavascriptType[]): void {
-        if (this.javascriptTypesRegistered) {
-            throw new Error('Javascript types should be registered only once.');
-        }
-
-        this.javascriptTypesRegistered = true;
-
-        const originalPrepareValue = pgUtils.prepareValue;
-
-        pgUtils.prepareValue = prepareJavascriptValue.bind(null, originalPrepareValue, javascriptTypes);
     }
 
     async registerDatabaseTypes(databaseTypes: DatabaseType[]): Promise<void> {

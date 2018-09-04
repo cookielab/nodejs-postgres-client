@@ -5,7 +5,7 @@ describe('transaction', () => {
         const client = new (jest.fn())();
         const transactionCallback = jest.fn();
 
-        const transaction = new Transaction(client, false, transactionCallback);
+        const transaction = new Transaction(client, transactionCallback);
         await transaction.perform();
 
         expect(transactionCallback).toHaveBeenCalledTimes(1);
@@ -18,13 +18,15 @@ describe('transaction', () => {
 
         const nestedTransactionCallback = jest.fn();
 
-        const transaction = new Transaction(client, false, async (connection) => {
+        const transaction = new Transaction(client, async (connection) => {
             await connection.transaction(nestedTransactionCallback);
         });
         await transaction.perform();
 
         expect(nestedTransactionCallback).toHaveBeenCalledTimes(1);
-        expect(nestedTransactionCallback).toHaveBeenCalledWith(new Transaction(client, false, nestedTransactionCallback, 1));
+        expect(nestedTransactionCallback).toHaveBeenCalledWith(new Transaction(client, nestedTransactionCallback, {
+            savepointCounter: 1,
+        }));
 
         expect(client.query).toHaveBeenCalledTimes(2);
         expect(client.query).toHaveBeenCalledWith({text: 'SAVEPOINT savepoint1', values: undefined});
@@ -39,7 +41,7 @@ describe('transaction', () => {
             throw new Error('Failing transaction');
         });
 
-        const transaction = new Transaction(client, false, async (connection) => {
+        const transaction = new Transaction(client, async (connection) => {
             await connection.transaction(nestedTransactionCallback);
         });
         await expect(transaction.perform())
@@ -47,7 +49,9 @@ describe('transaction', () => {
             .toEqual(new Error('Failing transaction'));
 
         expect(nestedTransactionCallback).toHaveBeenCalledTimes(1);
-        expect(nestedTransactionCallback).toHaveBeenCalledWith(new Transaction(client, false, nestedTransactionCallback, 1));
+        expect(nestedTransactionCallback).toHaveBeenCalledWith(new Transaction(client, nestedTransactionCallback, {
+            savepointCounter: 1,
+        }));
 
         expect(client.query).toHaveBeenCalledTimes(2);
         expect(client.query).toHaveBeenCalledWith({text: 'SAVEPOINT savepoint1', values: undefined});
@@ -63,7 +67,7 @@ describe('transaction', () => {
             stream.emit('finish');
         });
 
-        const transaction = new Transaction(client, false, async (connection) => {
+        const transaction = new Transaction(client, async (connection) => {
             await connection.transaction(nestedTransactionCallback);
         });
         await transaction.perform();
@@ -81,7 +85,7 @@ describe('transaction', () => {
             transaction.insertStream('not_existing_table', '', 1000);
         });
 
-        const transaction = new Transaction(client, false, async (connection) => {
+        const transaction = new Transaction(client, async (connection) => {
             await connection.transaction(nestedTransactionCallback);
         });
         await expect(transaction.perform())
