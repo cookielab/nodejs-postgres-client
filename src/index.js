@@ -5,12 +5,12 @@ import BatchInsertCollector from './BatchInsertCollector';
 import Client from './Client';
 import columnNamesTransformer from './transformers/columnNamesTransformer';
 import columnNameTransformer from './transformers/columnNameTransformer';
-import convertKeys from './convertKeys';
 import DatabaseInsertStream from './streams/DatabaseInsertStream';
 import insertTransformer from './transformers/insertTransformer';
 import isUniqueViolation from './isUniqueViolation';
 import multiInsertTransformer from './transformers/multiInsertTransformer';
 import OneRowExpectedError from './errors/OneRowExpectedError';
+import registerColumnNameMapper from './registerColumnNameMapper';
 import {SQL} from 'pg-async';
 import {SqlFragment} from 'pg-async/lib/sql';
 import TypeNotFoundError from './errors/TypeNotFoundError';
@@ -34,10 +34,10 @@ export type {Row} from './Row';
 export {
     BatchInsertCollector,
     Client,
-    convertKeys,
     DatabaseInsertStream,
     isUniqueViolation,
     OneRowExpectedError,
+    registerColumnNameMapper,
     SQL,
     SqlFragment,
     TypeNotFoundError,

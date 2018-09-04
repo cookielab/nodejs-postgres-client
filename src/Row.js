@@ -1,3 +1,3 @@
 // @flow
 
-export type Row = Object; // eslint-disable-line flowtype/no-weak-types
+export type Row = {[key: string]: any}; // eslint-disable-line flowtype/no-weak-types
