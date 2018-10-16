@@ -6,6 +6,7 @@ import Client from './Client';
 import columnNamesTransformer from './transformers/columnNamesTransformer';
 import columnNameTransformer from './transformers/columnNameTransformer';
 import DatabaseInsertStream from './streams/DatabaseInsertStream';
+import DatabaseReadStream from './streams/DatabaseReadStream';
 import insertTransformer from './transformers/insertTransformer';
 import isUniqueViolation from './isUniqueViolation';
 import multiInsertTransformer from './transformers/multiInsertTransformer';
@@ -29,11 +30,13 @@ SQL.registerTransform('insert_object', 'insert', insertTransformer);
 
 export type {Connection} from './Connection';
 export type {Row} from './Row';
+export type {QueryValue} from './QueryValue';
 
 export {
     BatchInsertCollector,
     Client,
     DatabaseInsertStream,
+    DatabaseReadStream,
     isUniqueViolation,
     OneRowExpectedError,
     SQL,

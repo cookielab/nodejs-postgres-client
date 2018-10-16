@@ -7,6 +7,7 @@ import QueryError from './errors/QueryError';
 import {SQL} from 'pg-async';
 import type {AsyncQueryable} from './AsyncQueryable';
 import type {Client, Pool, PoolClient, QueryConfig, ResultSet} from 'pg';
+import type {QueryValue} from './QueryValue';
 import type {Row} from './Row';
 import type {SqlFragment} from 'pg-async';
 
@@ -27,7 +28,7 @@ class Connection implements AsyncQueryable {
         this.debug = options.debug === true;
     }
 
-    async findOne(input: QueryConfig | string, values?: mixed[]): Promise<?Row> {
+    async findOne(input: QueryConfig | string, values?: QueryValue[]): Promise<?Row> {
         const result = await this.getRows(input, values);
 
         if (result.length > 1) {
@@ -60,7 +61,7 @@ class Connection implements AsyncQueryable {
         `);
     }
 
-    async query(input: QueryConfig | string, values?: mixed[]): Promise<ResultSet> {
+    async query(input: QueryConfig | string, values?: QueryValue[]): Promise<ResultSet> {
         const queryError = this.debug
             ? new QueryError(input, values) // capture stack trace
             : null;
@@ -83,7 +84,7 @@ class Connection implements AsyncQueryable {
         }
     }
 
-    async getRow(input: QueryConfig | string, values?: mixed[]): Promise<Row> {
+    async getRow(input: QueryConfig | string, values?: QueryValue[]): Promise<Row> {
         const result = await this.getRows(input, values);
 
         if (result.length !== 1) {
@@ -93,7 +94,7 @@ class Connection implements AsyncQueryable {
         return result[0];
     }
 
-    async getRows(input: QueryConfig | string, values?: mixed[]): Promise<Row[]> {
+    async getRows(input: QueryConfig | string, values?: QueryValue[]): Promise<Row[]> {
         const result = await this.query(input, values);
         return result.rows;
     }

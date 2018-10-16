@@ -12,6 +12,7 @@ import TypeNotFoundError from './errors/TypeNotFoundError';
 import type {ColumnNameMapper} from './registerColumnNameMapper';
 import type {JavascriptType} from './prepareJavascriptValue';
 import type {Pool, QueryConfig} from 'pg';
+import type {QueryValue} from './QueryValue';
 import type {TransactionCallback} from './Transaction';
 
 export type DatabaseType = {
@@ -72,7 +73,7 @@ class Client extends QueryableConnection {
         }
     }
 
-    async streamQuery(input: QueryConfig | string, values?: mixed[]): Promise<DatabaseReadStream> {
+    async streamQuery(input: QueryConfig | string, values?: QueryValue[]): Promise<DatabaseReadStream> {
         const query = new DatabaseReadStream(
             typeof input === 'string' ? input : input.text,
             typeof input === 'string' ? values : input.values

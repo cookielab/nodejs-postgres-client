@@ -4,6 +4,7 @@ import DatabaseInsertStream from './streams/DatabaseInsertStream';
 import DatabaseReadStream from './streams/DatabaseReadStream';
 import QueryableConnection from './QueryableConnection';
 import type {Client, PoolClient, QueryConfig, QuerySubmittableConfig, ResultSet} from 'pg';
+import type {QueryValue} from './QueryValue';
 
 export type TransactionCallback<T> = (connection: Transaction<T>) => Promise<T>;
 
@@ -60,7 +61,7 @@ class Transaction<T> extends QueryableConnection {
         }
     }
 
-    async query<U: QuerySubmittableConfig>(input: QueryConfig | string | U, values?: mixed[]): Promise<ResultSet | U> {
+    async query<U: QuerySubmittableConfig>(input: QueryConfig | string | U, values?: QueryValue[]): Promise<ResultSet | U> {
         if (this.isReadStreamInProgress) {
             throw new Error('Cannot run another query while one is still in progress. Possibly opened cursor.');
         }
@@ -68,7 +69,7 @@ class Transaction<T> extends QueryableConnection {
         return await super.query(input, values);
     }
 
-    async streamQuery(input: QueryConfig | string, values?: mixed[]): Promise<DatabaseReadStream> {
+    async streamQuery(input: QueryConfig | string, values?: QueryValue[]): Promise<DatabaseReadStream> {
         const query = new DatabaseReadStream(
             typeof input === 'string' ? input : input.text,
             typeof input === 'string' ? values : input.values
