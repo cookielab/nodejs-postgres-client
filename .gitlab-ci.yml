@@ -3,43 +3,79 @@ stages:
   - test
   - publish
 
-image: cookielab/nodejs:8
+.node_8_template: &node_8_definition
+  image: cookielab/nodejs:8
+  variables:
+    NODE_VERSION: 8
 
-yarn:
+.node_10_template: &node_10_definition
+  image: cookielab/nodejs:build-10
+  variables:
+    NODE_VERSION: 10
+
+.yarn_template: &yarn_definition
   stage: prepare
   tags:
     - docker
   script:
     - yarn
   cache:
-    key: "$CI_JOB_NAME"
+    key: "$NODE_VERSION:$CI_JOB_NAME"
     paths:
       - node_modules
   artifacts:
-    name: "$CI_JOB_NAME"
+    name: "$NODE_VERSION:$CI_JOB_NAME"
     expire_in: 1 day
     paths:
       - node_modules
 
-lint:
+yarn-8:
+  <<: *node_8_definition
+  <<: *yarn_definition
+
+yarn-10:
+  <<: *node_10_definition
+  <<: *yarn_definition
+
+.lint_template: &lint_definition
   stage: test
   tags:
     - docker
-  dependencies:
-    - yarn
   script:
     - bin/lint
 
-flow:
+lint-8:
+  <<: *node_8_definition
+  <<: *lint_definition
+  dependencies:
+    - yarn-8
+
+lint-10:
+  <<: *node_10_definition
+  <<: *lint_definition
+  dependencies:
+    - yarn-10
+
+.flow_template: &flow_definition
   stage: test
   tags:
     - docker
-  dependencies:
-    - yarn
   script:
     - bin/flow
 
-test:
+flow-8:
+  <<: *node_8_definition
+  <<: *flow_definition
+  dependencies:
+    - yarn-8
+
+flow-10:
+  <<: *node_10_definition
+  <<: *flow_definition
+  dependencies:
+    - yarn-10
+
+.test_template: &test_definition
   stage: test
   tags:
     - docker
@@ -58,7 +94,20 @@ test:
     - bin/jest --coverage
   coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
 
+test-8:
+  <<: *node_8_definition
+  <<: *test_definition
+  dependencies:
+    - yarn-8
+
+test-10:
+  <<: *node_10_definition
+  <<: *test_definition
+  dependencies:
+    - yarn-10
+
 publish:
+  <<: *node_10_definition
   stage: publish
   tags:
     - docker
