@@ -81,8 +81,11 @@ stages:
   services:
     - postgres
   script:
-    - bin/jest --coverage
+    - bin/jest --coverage --ci --reporters=default --reporters=jest-junit
   coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
+  artifacts:
+    reports:
+      junit: junit.xml
 
 'test 8/10':
   <<: *test_definition
