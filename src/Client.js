@@ -32,6 +32,13 @@ const OPTIONS_DEFAULT = {
     debug: false,
 };
 
+const parseArray = (value: string, itemParser: DatabaseTypeParser): any => { // eslint-disable-line flowtype/no-weak-types
+    // $FlowFixMe - arrayParser is missing in PG flow-typed
+    const parser = pg.types.arrayParser.create(value, itemParser);
+
+    return parser.parse();
+};
+
 class Client extends QueryableConnection {
     +pool: Pool;
 
@@ -97,11 +104,14 @@ class Client extends QueryableConnection {
 
     async registerDatabaseTypes(databaseTypes: DatabaseType[]): Promise<void> {
         const promises = databaseTypes.map(async (type: DatabaseType): Promise<void> => {
-            const {oid} = await this.getOne(SQL`
-                SELECT oid FROM pg_type WHERE typname = ${type.name}
+            const {oid, typarray} = await this.getOne(SQL`
+                SELECT oid, typarray FROM pg_type WHERE typname = ${type.name}
             `, TypeNotFoundError);
 
             pg.types.setTypeParser(oid, type.parser);
+            if (typarray) {
+                pg.types.setTypeParser(typarray, (value: string) => parseArray(value, type.parser));
+            }
         });
 
         await Promise.all(promises);
