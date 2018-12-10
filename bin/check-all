@@ -3,7 +3,7 @@
 STATUS=0
 
 bin/lint || STATUS=1
-bin/flow || STATUS=1
+bin/typescript || STATUS=1
 bin/jest || STATUS=1
 
 exit $STATUS

@@ -3,4 +3,4 @@
 set -e
 
 rm -rf lib
-node_modules/.bin/babel --watch=src --out-dir=lib --copy-files --source-maps
+node_modules/.bin/tsc --watch --sourceMap
