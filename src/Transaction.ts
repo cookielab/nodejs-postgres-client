@@ -3,6 +3,7 @@ import DatabaseReadStream from './streams/DatabaseReadStream';
 import QueryableConnection from './QueryableConnection';
 import {Client, PoolClient, QueryConfig, QueryResult} from 'pg';
 import {QueryValue} from './QueryValue';
+import {Lock} from 'semaphore-async-await';
 
 export type TransactionCallback<T> = (connection: Transaction<T>) => Promise<T> | T;
 
@@ -19,6 +20,7 @@ const OPTIONS_DEFAULT = {
 class Transaction<T> extends QueryableConnection {
     readonly connection!: Client | PoolClient; // ! - initialized in parent constructor
     readonly transactionCallback: TransactionCallback<T>;
+    private readonly innerTransactionLock: Lock;
     savepointCounter: number;
     isReadStreamInProgress: boolean;
     insertStreamInProgressCount: number;
@@ -26,6 +28,7 @@ class Transaction<T> extends QueryableConnection {
     constructor(client: Client | PoolClient, transactionCallback: TransactionCallback<T>, options: TransactionOptions = OPTIONS_DEFAULT) {
         super(client, options);
         this.transactionCallback = transactionCallback;
+        this.innerTransactionLock = new Lock();
         this.savepointCounter = options.savepointCounter != null ? options.savepointCounter : 0;
         this.isReadStreamInProgress = false;
         this.insertStreamInProgressCount = 0;
@@ -36,26 +39,31 @@ class Transaction<T> extends QueryableConnection {
     }
 
     async transaction<U>(transactionCallback: TransactionCallback<U>): Promise<U> {
-        const savepointName = `savepoint${++this.savepointCounter}`;
-
-        await this.query(`SAVEPOINT ${savepointName}`);
-
+        await this.innerTransactionLock.acquire();
         try {
-            const transaction = new Transaction(this.connection, transactionCallback, {
-                debug: this.debug,
-                savepointCounter: this.savepointCounter,
-            });
-            const result = await transaction.perform();
+            const savepointName = `savepoint${++this.savepointCounter}`;
 
-            transaction.validateUnfinishedInsertStreams();
+            await this.query(`SAVEPOINT ${savepointName}`);
 
-            await this.query(`RELEASE SAVEPOINT ${savepointName}`);
+            try {
+                const transaction = new Transaction(this.connection, transactionCallback, {
+                    debug: this.debug,
+                    savepointCounter: this.savepointCounter,
+                });
+                const result = await transaction.perform();
 
-            return result;
+                transaction.validateUnfinishedInsertStreams();
 
-        } catch (error) {
-            await this.query(`ROLLBACK TO SAVEPOINT ${savepointName}`);
-            throw error;
+                await this.query(`RELEASE SAVEPOINT ${savepointName}`);
+
+                return result;
+
+            } catch (error) {
+                await this.query(`ROLLBACK TO SAVEPOINT ${savepointName}`);
+                throw error;
+            }
+        } finally {
+            this.innerTransactionLock.release();
         }
     }
 

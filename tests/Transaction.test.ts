@@ -34,6 +34,41 @@ describe('transaction', () => {
         expect(client.query).toHaveBeenNthCalledWith(2, 'RELEASE SAVEPOINT savepoint1', undefined);
     });
 
+    it('executes a nested transaction in sequence using iteration and Promise.all', async () => {
+        const client: jest.Mocked<Client> = new (jest.fn())() as any;
+        client.query = jest.fn();
+
+        const nestedTransactionCallback = jest.fn();
+
+        const iterations = new Array(3).fill(null);
+
+        const transaction = new Transaction(client, async (connection: Transaction<void>): Promise<void> => {
+            await Promise.all(iterations.map(async () => {
+                await connection.transaction(nestedTransactionCallback);
+            }));
+        });
+        await transaction.perform();
+
+        expect(nestedTransactionCallback).toHaveBeenCalledTimes(3);
+        expect(nestedTransactionCallback).toHaveBeenNthCalledWith(1, new Transaction(client, nestedTransactionCallback, {
+            savepointCounter: 1,
+        }));
+        expect(nestedTransactionCallback).toHaveBeenNthCalledWith(2, new Transaction(client, nestedTransactionCallback, {
+            savepointCounter: 2,
+        }));
+        expect(nestedTransactionCallback).toHaveBeenNthCalledWith(3, new Transaction(client, nestedTransactionCallback, {
+            savepointCounter: 3,
+        }));
+
+        expect(client.query).toHaveBeenCalledTimes(6);
+        expect(client.query).toHaveBeenNthCalledWith(1, 'SAVEPOINT savepoint1', undefined);
+        expect(client.query).toHaveBeenNthCalledWith(2, 'RELEASE SAVEPOINT savepoint1', undefined);
+        expect(client.query).toHaveBeenNthCalledWith(3, 'SAVEPOINT savepoint2', undefined);
+        expect(client.query).toHaveBeenNthCalledWith(4, 'RELEASE SAVEPOINT savepoint2', undefined);
+        expect(client.query).toHaveBeenNthCalledWith(5, 'SAVEPOINT savepoint3', undefined);
+        expect(client.query).toHaveBeenNthCalledWith(6, 'RELEASE SAVEPOINT savepoint3', undefined);
+    });
+
     it('rollbacks a failing nested transaction callback upon perform', async () => {
         const client: jest.Mocked<Client> = new (jest.fn())() as any;
         client.query = jest.fn();

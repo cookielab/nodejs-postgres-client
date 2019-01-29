@@ -2,6 +2,7 @@ import Client from '../src/Client';
 import {createPool} from './bootstrap';
 import {QueryResult} from 'pg';
 import {Connection} from '../src';
+import Transaction from '../src/Transaction';
 
 describe('client database integration', () => {
     const client: Client = new Client(createPool());
@@ -47,12 +48,24 @@ describe('client database integration', () => {
     });
 
     it('performs a nested transaction on the same connection as the parent-transaction', async (done) => {
-        await client.transaction(async (connection: Connection) => {
-            await connection.transaction((nestedConnection: Connection) => {
+        await client.transaction(async (connection: Transaction<void>) => {
+            await connection.transaction((nestedConnection: Transaction<void>) => {
                 expect(nestedConnection.connection).toBe(connection.connection);
 
                 done();
             });
+        });
+    });
+
+    it('performs a nested transaction in sequence using iteration and Promise.all', async () => {
+        const iterations = new Array(3).fill(null);
+
+        await client.transaction(async (connection: Transaction<void>) => {
+            await Promise.all(iterations.map(async () => {
+                await connection.transaction((nestedConnection: Transaction<void>) => {
+                    expect(nestedConnection.connection).toBe(connection.connection);
+                });
+            }));
         });
     });
 });
