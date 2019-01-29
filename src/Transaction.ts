@@ -4,6 +4,7 @@ import QueryableConnection from './QueryableConnection';
 import {Client, PoolClient, QueryConfig, QueryResult} from 'pg';
 import {QueryValue} from './QueryValue';
 import {Lock} from 'semaphore-async-await';
+import {Connection} from './Connection';
 
 export type TransactionCallback<T> = (connection: Transaction<T>) => Promise<T> | T;
 
@@ -17,7 +18,7 @@ const OPTIONS_DEFAULT = {
     savepointCounter: 0,
 };
 
-class Transaction<T> extends QueryableConnection {
+class Transaction<T> extends QueryableConnection implements Connection {
     protected readonly connection!: Client | PoolClient; // ! - initialized in parent constructor
     private readonly transactionCallback: TransactionCallback<T>;
     private readonly innerTransactionLock: Lock;

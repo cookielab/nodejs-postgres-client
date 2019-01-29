@@ -9,6 +9,7 @@ import Transaction, {TransactionCallback} from './Transaction';
 import TypeNotFoundError from './errors/TypeNotFoundError';
 import {QueryValue} from './QueryValue';
 import {TypeParser} from 'pg-types';
+import {Connection} from './Connection';
 
 export type DatabaseType = {
     name: string,
@@ -31,7 +32,7 @@ const parseArray = (value: string, itemParser: TypeParser): any => {
     return parser.parse();
 };
 
-class Client extends QueryableConnection {
+class Client extends QueryableConnection implements Connection {
     private readonly pool: Pool;
 
     constructor(pool: Pool, options: ClientOptions = OPTIONS_DEFAULT) {
