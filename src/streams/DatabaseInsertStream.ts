@@ -4,7 +4,6 @@ import {Row} from '../Row';
 
 export default class DatabaseInsertStream extends Writable {
     private readonly batchInsertCollector: BatchInsertCollector;
-    private itemsCount: number;
     private promises: Set<Promise<void>>;
 
     constructor(batchInsertCollector: BatchInsertCollector) {
@@ -13,13 +12,11 @@ export default class DatabaseInsertStream extends Writable {
             highWaterMark: batchInsertCollector.getBatchSize(),
         });
         this.batchInsertCollector = batchInsertCollector;
-        this.itemsCount = 0;
         this.promises = new Set();
     }
 
     getPromisesForAwait(): Promise<void>[] {
         const promises = Array.from(this.promises.values());
-        this.itemsCount = 0;
         this.promises = new Set();
         return promises;
     }
@@ -27,9 +24,8 @@ export default class DatabaseInsertStream extends Writable {
     async _write(row: Row, encoding: string, callback: (error?: Error) => void): Promise<void> {
         try {
             this.promises.add(this.batchInsertCollector.add(row));
-            this.itemsCount++;
 
-            if (this.itemsCount >= this.writableHighWaterMark) {
+            if (this.promises.size >= this.writableHighWaterMark) {
                 await Promise.all(this.getPromisesForAwait());
             }
             callback();
