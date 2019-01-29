@@ -5,14 +5,14 @@ import {AsyncQueryable} from './Connection';
 const maxBatchInsert = 1000;
 
 class BatchInsertCollector {
-    readonly connection: AsyncQueryable;
-    readonly tableName: string;
-    insertedRowCount: number;
-    batchSize: number;
-    querySuffix: string;
-    rows: Row[];
-    batchPromise: Promise<void>;
-    batchPromiseHandlers!: {resolve: () => void, reject: (error: Error) => void}; // ! - initialized in the promise created in the constructor
+    private readonly connection: AsyncQueryable;
+    private readonly tableName: string;
+    private insertedRowCount: number;
+    private batchSize: number;
+    private querySuffix: string;
+    private rows: Row[];
+    private batchPromise: Promise<void>;
+    private batchPromiseHandlers!: {resolve: () => void, reject: (error: Error) => void}; // ! - initialized in the promise created in the constructor
 
     constructor(connection: AsyncQueryable, tableName: string) {
         this.connection = connection;
@@ -24,6 +24,10 @@ class BatchInsertCollector {
         this.batchPromise = new Promise((resolve: () => void, reject: (error: Error) => void): void => {
             this.batchPromiseHandlers = {resolve, reject};
         });
+    }
+
+    getBatchSize(): number {
+        return this.batchSize;
     }
 
     setBatchSize(batchSize: number): BatchInsertCollector {

@@ -90,10 +90,10 @@ describe('BatchInsertCollector', () => {
         const collector = new BatchInsertCollector(database, 'account');
 
         collector.setBatchSize(0);
-        expect(collector.batchSize).toBe(1000);
+        expect(collector.getBatchSize()).toBe(1000);
 
         collector.setBatchSize(1001);
-        expect(collector.batchSize).toBe(1000);
+        expect(collector.getBatchSize()).toBe(1000);
     });
 
     it('calculates amount of inserted rows by query result not by added rows', async () => {

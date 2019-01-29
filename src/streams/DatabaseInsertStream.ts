@@ -3,14 +3,14 @@ import {Writable} from 'stream';
 import {Row} from '../Row';
 
 export default class DatabaseInsertStream extends Writable {
-    readonly batchInsertCollector: BatchInsertCollector;
-    itemsCount: number;
-    promises: Set<Promise<void>>;
+    private readonly batchInsertCollector: BatchInsertCollector;
+    private itemsCount: number;
+    private promises: Set<Promise<void>>;
 
     constructor(batchInsertCollector: BatchInsertCollector) {
         super({
             objectMode: true,
-            highWaterMark: batchInsertCollector.batchSize,
+            highWaterMark: batchInsertCollector.getBatchSize(),
         });
         this.batchInsertCollector = batchInsertCollector;
         this.itemsCount = 0;

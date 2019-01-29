@@ -32,7 +32,7 @@ const parseArray = (value: string, itemParser: TypeParser): any => {
 };
 
 class Client extends QueryableConnection {
-    readonly pool: Pool;
+    private readonly pool: Pool;
 
     constructor(pool: Pool, options: ClientOptions = OPTIONS_DEFAULT) {
         super(pool, options);

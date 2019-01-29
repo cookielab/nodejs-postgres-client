@@ -50,6 +50,7 @@ describe('client database integration', () => {
     it('performs a nested transaction on the same connection as the parent-transaction', async (done) => {
         await client.transaction(async (connection: Transaction<void>) => {
             await connection.transaction((nestedConnection: Transaction<void>) => {
+                // @ts-ignore connection property is defined as protected but we want to test it
                 expect(nestedConnection.connection).toBe(connection.connection);
 
                 done();
@@ -63,6 +64,7 @@ describe('client database integration', () => {
         await client.transaction(async (connection: Transaction<void>) => {
             await Promise.all(iterations.map(async () => {
                 await connection.transaction((nestedConnection: Transaction<void>) => {
+                    // @ts-ignore connection property is defined as protected but we want to test it
                     expect(nestedConnection.connection).toBe(connection.connection);
                 });
             }));

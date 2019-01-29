@@ -1,5 +1,5 @@
 import DatabaseReadStream from './streams/DatabaseReadStream';
-import {Client, Pool, PoolClient, QueryConfig, QueryResult} from 'pg';
+import {QueryConfig, QueryResult} from 'pg';
 import {QueryValue} from './QueryValue';
 import {Row} from './Row';
 import DatabaseInsertStream from './streams/DatabaseInsertStream';
@@ -9,7 +9,6 @@ export interface AsyncQueryable {
 }
 
 export interface AsyncConnection extends AsyncQueryable {
-    readonly connection: Client | Pool | PoolClient;
     findOne(input: QueryConfig | string, values?: QueryValue[]): Promise<Row | null>;
     getOne(input: QueryConfig, error: {new(...parameters: any[]): Error}): Promise<Row>;
     insert(table: string, values: Row): Promise<QueryResult>;

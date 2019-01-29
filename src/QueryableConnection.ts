@@ -13,8 +13,8 @@ type ConnectionOptions = {
 };
 
 export default abstract class QueryableConnection implements AsyncConnection {
-    readonly connection: Client | Pool | PoolClient;
-    readonly debug: boolean;
+    protected readonly connection: Client | Pool | PoolClient;
+    protected readonly debug: boolean;
 
     protected constructor(connection: Client | Pool | PoolClient, options: ConnectionOptions) {
         this.connection = connection;

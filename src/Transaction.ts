@@ -18,12 +18,12 @@ const OPTIONS_DEFAULT = {
 };
 
 class Transaction<T> extends QueryableConnection {
-    readonly connection!: Client | PoolClient; // ! - initialized in parent constructor
-    readonly transactionCallback: TransactionCallback<T>;
+    protected readonly connection!: Client | PoolClient; // ! - initialized in parent constructor
+    private readonly transactionCallback: TransactionCallback<T>;
     private readonly innerTransactionLock: Lock;
-    savepointCounter: number;
-    isReadStreamInProgress: boolean;
-    insertStreamInProgressCount: number;
+    private savepointCounter: number;
+    private isReadStreamInProgress: boolean;
+    private insertStreamInProgressCount: number;
 
     constructor(client: Client | PoolClient, transactionCallback: TransactionCallback<T>, options: TransactionOptions = OPTIONS_DEFAULT) {
         super(client, options);
