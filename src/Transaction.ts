@@ -8,10 +8,10 @@ import {Connection} from './Connection';
 
 export type TransactionCallback<T> = (connection: Transaction<T>) => Promise<T> | T;
 
-type TransactionOptions = {
-    debug?: boolean,
-    savepointCounter?: number,
-};
+interface TransactionOptions {
+    readonly debug?: boolean;
+    readonly savepointCounter?: number;
+}
 
 const OPTIONS_DEFAULT = {
     debug: false,

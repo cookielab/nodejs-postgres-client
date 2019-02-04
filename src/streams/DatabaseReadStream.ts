@@ -1,7 +1,6 @@
 import QueryStream from 'pg-query-stream';
 
-type CallbackResult = void | Promise<void>;
-type Callback = () => CallbackResult;
+type Callback = () => Promise<void> | void;
 
 const processCallback = async (callback: Callback | undefined): Promise<void> => {
     if (callback != null) {

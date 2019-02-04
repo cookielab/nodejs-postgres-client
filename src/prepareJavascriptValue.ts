@@ -1,23 +1,22 @@
-type OriginalPrepareValue = (value: any, seen?: any[]) => any;
+type OriginalPrepareValue = (value: unknown) => Buffer | string | null;
 
-type MatchValue = (value: any) => boolean;
-type ConvertValue = (value: any) => string | null;
+type MatchValue = (value: unknown) => boolean;
+type ConvertValue = (value: unknown) => Buffer | string | null;
 
-export type JavascriptType = {
-    match: MatchValue,
-    convert: ConvertValue,
-};
+export interface JavascriptType {
+    readonly match: MatchValue;
+    readonly convert: ConvertValue;
+}
 
 const prepareJavascriptValue = (
     originalPrepareValue: OriginalPrepareValue,
     customTypes: JavascriptType[],
-    value: any,
-    seen?: any[]
-): any => {
-    const types = customTypes.filter(({match}: {match: MatchValue}) => match(value));
+    value: unknown
+): Buffer | string | null => {
+    const types = customTypes.filter((type: JavascriptType) => type.match(value));
 
     if (types.length === 0) {
-        return originalPrepareValue(value, seen);
+        return originalPrepareValue(value);
     }
 
     if (types.length !== 1) {

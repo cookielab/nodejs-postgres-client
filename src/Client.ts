@@ -11,22 +11,22 @@ import {QueryValue} from './QueryValue';
 import {TypeParser} from 'pg-types';
 import {Connection} from './Connection';
 
-export type DatabaseType = {
-    name: string,
-    parser: TypeParser,
-};
+export interface DatabaseType {
+    readonly name: string;
+    readonly parser: TypeParser;
+}
 
-type ClientOptions = {
-    debug?: boolean,
-    javascriptTypes?: JavascriptType[],
-    columnNameMapper?: ColumnNameMapper,
-};
+interface ClientOptions {
+    readonly debug?: boolean;
+    readonly javascriptTypes?: JavascriptType[];
+    readonly columnNameMapper?: ColumnNameMapper;
+}
 
 const OPTIONS_DEFAULT = {
     debug: false,
 };
 
-const parseArray = (value: string, itemParser: TypeParser): any => {
+const parseArray = (value: string, itemParser: TypeParser): unknown[] | null => {
     const parser = pg.types.arrayParser.create(value, itemParser);
 
     return parser.parse();

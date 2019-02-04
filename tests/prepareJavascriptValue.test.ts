@@ -3,24 +3,21 @@ import prepareJavascriptValue from '../src/prepareJavascriptValue';
 describe('prepareJavascriptValue', () => {
     it('calls the original prepareValue function when there are no custom types', () => {
         const value: any = [];
-        const seen: any[] = [];
 
         const originalPrepareValueMock = jest.fn();
 
         prepareJavascriptValue(
             originalPrepareValueMock,
             [],
-            value,
-            seen
+            value
         );
 
         expect(originalPrepareValueMock).toHaveBeenCalledTimes(1);
-        expect(originalPrepareValueMock).toHaveBeenCalledWith(value, seen);
+        expect(originalPrepareValueMock).toHaveBeenCalledWith(value);
     });
 
     it('calls the original prepareValue function when no custom type matches the value', () => {
         const value: any = [];
-        const seen: any[] = [];
 
         const originalPrepareValueMock = jest.fn();
         const match = jest.fn(() => false);
@@ -31,8 +28,7 @@ describe('prepareJavascriptValue', () => {
             [
                 {match, convert},
             ],
-            value,
-            seen
+            value
         );
 
         expect(match).toHaveBeenCalledTimes(1);
@@ -40,12 +36,11 @@ describe('prepareJavascriptValue', () => {
         expect(convert).not.toHaveBeenCalled();
 
         expect(originalPrepareValueMock).toHaveBeenCalledTimes(1);
-        expect(originalPrepareValueMock).toHaveBeenCalledWith(value, seen);
+        expect(originalPrepareValueMock).toHaveBeenCalledWith(value);
     });
 
     it('calls a custom type converter if the type matches the value', () => {
         const value: any = [];
-        const seen: any[] = [];
         const returnValue: any = [];
 
         const originalPrepareValueMock = jest.fn();
@@ -57,8 +52,7 @@ describe('prepareJavascriptValue', () => {
             [
                 {match, convert},
             ],
-            value,
-            seen
+            value
         );
         expect(result).toBe(returnValue);
 

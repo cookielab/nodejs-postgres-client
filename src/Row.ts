@@ -1,1 +1,3 @@
-export type Row = {[key: string]: any};
+export interface Row {
+    readonly [key: string]: any;
+}

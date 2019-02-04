@@ -8,9 +8,9 @@ import {QueryValue} from './QueryValue';
 import {Row} from './Row';
 import {AsyncConnection} from './Connection';
 
-type ConnectionOptions = {
-    debug?: boolean,
-};
+interface ConnectionOptions {
+    readonly debug?: boolean;
+}
 
 export default abstract class QueryableConnection implements AsyncConnection {
     protected readonly connection: Client | Pool | PoolClient;
