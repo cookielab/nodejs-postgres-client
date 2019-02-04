@@ -7,7 +7,6 @@ import registerColumnNameMapper, {ColumnNameMapper} from './registerColumnNameMa
 import {SQL} from 'pg-async';
 import Transaction, {TransactionCallback} from './Transaction';
 import TypeNotFoundError from './errors/TypeNotFoundError';
-import {QueryValue} from './QueryValue';
 import {TypeParser} from 'pg-types';
 import {Connection} from './Connection';
 
@@ -73,7 +72,7 @@ class Client extends QueryableConnection implements Connection {
         }
     }
 
-    async streamQuery(input: QueryConfig | string, values?: QueryValue[]): Promise<DatabaseReadStream> {
+    async streamQuery(input: QueryConfig | string, values?: any[]): Promise<DatabaseReadStream> {
         const query = new DatabaseReadStream(
             typeof input === 'string' ? input : input.text,
             typeof input === 'string' ? values : input.values

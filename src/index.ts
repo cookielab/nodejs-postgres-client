@@ -28,7 +28,6 @@ SQL.registerTransform('insert_object', 'insert', insertTransformer);
 
 export {Connection} from './Connection';
 export {Row} from './Row';
-export {QueryValue} from './QueryValue';
 
 export {
     BatchInsertCollector,

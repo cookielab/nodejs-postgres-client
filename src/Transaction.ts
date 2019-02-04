@@ -2,7 +2,6 @@ import DatabaseInsertStream from './streams/DatabaseInsertStream';
 import DatabaseReadStream from './streams/DatabaseReadStream';
 import QueryableConnection from './QueryableConnection';
 import {Client, PoolClient, QueryConfig, QueryResult} from 'pg';
-import {QueryValue} from './QueryValue';
 import {Lock} from 'semaphore-async-await';
 import {Connection} from './Connection';
 
@@ -68,7 +67,7 @@ class Transaction<T> extends QueryableConnection implements Connection {
         }
     }
 
-    async query(input: QueryConfig | string, values?: QueryValue[]): Promise<QueryResult> {
+    async query(input: QueryConfig | string, values?: any[]): Promise<QueryResult> {
         if (this.isReadStreamInProgress) {
             throw new Error('Cannot run another query while one is still in progress. Possibly opened cursor.');
         }
@@ -76,7 +75,7 @@ class Transaction<T> extends QueryableConnection implements Connection {
         return await super.query(input, values);
     }
 
-    async streamQuery(input: QueryConfig | string, values?: QueryValue[]): Promise<DatabaseReadStream> {
+    async streamQuery(input: QueryConfig | string, values?: any[]): Promise<DatabaseReadStream> {
         if (this.isReadStreamInProgress) {
             throw new Error('Cannot run another query while one is still in progress. Possibly opened cursor.');
         }
