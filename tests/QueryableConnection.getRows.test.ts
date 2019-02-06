@@ -5,7 +5,7 @@ describe('getRows', () => {
     it('returns only the result rows', async () => {
         const resultRows: Row[] = [];
         const connection = new Client(jest.fn() as any);
-        jest.spyOn(connection, 'query').mockImplementation(() => ({
+        jest.spyOn(connection, 'query').mockImplementation(() => Promise.resolve({
             rows: resultRows,
         }));
 

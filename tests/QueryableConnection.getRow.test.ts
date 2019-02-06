@@ -8,7 +8,7 @@ describe('getRow', () => {
 
         const pool: jest.Mocked<Pool> = new (jest.fn())() as any;
         pool.query = jest.fn();
-        jest.spyOn(pool, 'query').mockImplementation(() => ({
+        jest.spyOn(pool, 'query').mockImplementation(() => Promise.resolve({
             rows: [resultRow],
         }));
 
@@ -21,7 +21,7 @@ describe('getRow', () => {
     it('throws an exception when no row is found', async () => {
         const pool: jest.Mocked<Pool> = new (jest.fn())() as any;
         pool.query = jest.fn();
-        jest.spyOn(pool, 'query').mockImplementation(() => ({
+        jest.spyOn(pool, 'query').mockImplementation(() => Promise.resolve({
             rows: [],
         }));
 
@@ -33,7 +33,7 @@ describe('getRow', () => {
     it('throws an exception when too many rows are found', async () => {
         const pool: jest.Mocked<Pool> = new (jest.fn())() as any;
         pool.query = jest.fn();
-        jest.spyOn(pool, 'query').mockImplementation(() => ({
+        jest.spyOn(pool, 'query').mockImplementation(() => Promise.resolve({
             rows: [
                 {},
                 {},

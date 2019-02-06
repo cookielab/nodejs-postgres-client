@@ -17,7 +17,7 @@ describe('getOne', () => {
     it('returns a row when found', async () => {
         const databaseRow = {};
         const connection = new Client(jest.fn() as any);
-        jest.spyOn(connection, 'getRow').mockImplementation(() => databaseRow);
+        jest.spyOn(connection, 'getRow').mockImplementation(() => Promise.resolve(databaseRow));
 
         const id = 42;
         const result = await connection.getOne(SQL`SELECT ${id}`, OneRowExpectedError);
@@ -27,9 +27,7 @@ describe('getOne', () => {
 
     it('throws a custom error when a row is not found using parametrized query', async () => {
         const connection = new Client(jest.fn() as any);
-        jest.spyOn(connection, 'getRow').mockImplementation(() => {
-            throw new OneRowExpectedError(0);
-        });
+        jest.spyOn(connection, 'getRow').mockImplementation(() => Promise.reject(new OneRowExpectedError(0)));
 
         const id = 42;
 
@@ -40,9 +38,7 @@ describe('getOne', () => {
 
     it('throws a custom error when a row is not found using plain text query', async () => {
         const connection = new Client(jest.fn() as any);
-        jest.spyOn(connection, 'getRow').mockImplementation(() => {
-            throw new OneRowExpectedError(0);
-        });
+        jest.spyOn(connection, 'getRow').mockImplementation(() => Promise.reject(new OneRowExpectedError(0)));
 
         await expect(connection.getOne({text: 'SELECT 42'}, CustomNotFoundError))
             .rejects
@@ -51,9 +47,7 @@ describe('getOne', () => {
 
     it('rethrows an unexpected error', async () => {
         const connection = new Client(jest.fn() as any);
-        jest.spyOn(connection, 'getRow').mockImplementation(() => {
-            throw new UnexpectedError();
-        });
+        jest.spyOn(connection, 'getRow').mockImplementation(() => Promise.reject(new UnexpectedError()));
 
         const id = 42;
 
