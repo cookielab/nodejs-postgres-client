@@ -72,7 +72,7 @@ describe('constructor', () => {
         });
 
         it('allows multiple types with the same convert function', () => {
-            const returnValue = {};
+            const returnValue = '';
             const wrappedConvert = jest.fn(() => returnValue);
 
             const client = new Client(pool, {
