@@ -6,6 +6,10 @@ describe('getRows', () => {
         const resultRows: Row[] = [];
         const connection = new Client(jest.fn() as any);
         jest.spyOn(connection, 'query').mockImplementation(() => Promise.resolve({
+            command: 'INSERT',
+            rowCount: 0,
+            oid: 0,
+            fields: [],
             rows: resultRows,
         }));
 
