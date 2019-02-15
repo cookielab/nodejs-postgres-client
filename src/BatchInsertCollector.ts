@@ -1,6 +1,6 @@
-import SQL from 'pg-async/lib/sql';
-import {Row} from './Row';
 import {AsyncQueryable} from './Connection';
+import {Row} from './Row';
+import SQL from 'pg-async/lib/sql';
 
 const maxBatchInsert = 1000;
 

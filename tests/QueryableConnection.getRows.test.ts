@@ -1,5 +1,5 @@
-import Client from '../src/Client';
 import {Row} from '../src';
+import Client from '../src/Client';
 
 describe('getRows', () => {
     it('returns only the result rows', async () => {

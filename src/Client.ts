@@ -1,14 +1,14 @@
+import {Connection} from './Connection';
+import {SQL} from 'pg-async';
+import {TypeParser} from 'pg-types';
 import DatabaseReadStream from './streams/DatabaseReadStream';
+import QueryableConnection from './QueryableConnection';
+import Transaction, {TransactionCallback} from './Transaction';
+import TypeNotFoundError from './errors/TypeNotFoundError';
 import pg, {Pool, QueryConfig} from 'pg';
 import pgUtils from 'pg/lib/utils';
 import prepareJavascriptValue, {JavascriptType} from './prepareJavascriptValue';
-import QueryableConnection from './QueryableConnection';
 import registerColumnNameMapper, {ColumnNameMapper} from './registerColumnNameMapper';
-import {SQL} from 'pg-async';
-import Transaction, {TransactionCallback} from './Transaction';
-import TypeNotFoundError from './errors/TypeNotFoundError';
-import {TypeParser} from 'pg-types';
-import {Connection} from './Connection';
 
 export interface DatabaseType {
     readonly name: string;

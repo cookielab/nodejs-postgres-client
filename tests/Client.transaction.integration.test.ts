@@ -1,7 +1,7 @@
-import Client from '../src/Client';
-import {createPool} from './bootstrap';
-import {QueryResult} from 'pg';
 import {Connection} from '../src';
+import {QueryResult} from 'pg';
+import {createPool} from './bootstrap';
+import Client from '../src/Client';
 import Transaction from '../src/Transaction';
 
 describe('client database integration', () => {

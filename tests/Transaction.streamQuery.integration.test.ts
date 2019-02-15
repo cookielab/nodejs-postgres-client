@@ -1,7 +1,7 @@
-import Client from '../src/Client';
-import {createPool} from './bootstrap';
-import DatabaseReadStream from '../src/streams/DatabaseReadStream';
 import {ReadableStreamAsyncReader} from '@cookielab.io/stream-async-wrappers';
+import {createPool} from './bootstrap';
+import Client from '../src/Client';
+import DatabaseReadStream from '../src/streams/DatabaseReadStream';
 import Transaction from '../src/Transaction';
 
 describe('transaction database integration', () => {

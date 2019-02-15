@@ -1,11 +1,11 @@
+import {AsyncConnection} from './Connection';
+import {Client, Pool, PoolClient, QueryConfig, QueryResult} from 'pg';
+import {Row} from './Row';
+import {SQL} from 'pg-async';
 import BatchInsertCollector from './BatchInsertCollector';
 import DatabaseInsertStream from './streams/DatabaseInsertStream';
 import OneRowExpectedError from './errors/OneRowExpectedError';
 import QueryError from './errors/QueryError';
-import {SQL} from 'pg-async';
-import {Client, Pool, PoolClient, QueryConfig, QueryResult} from 'pg';
-import {Row} from './Row';
-import {AsyncConnection} from './Connection';
 
 interface ConnectionOptions {
     readonly debug?: boolean;

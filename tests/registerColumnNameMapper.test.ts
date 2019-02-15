@@ -1,7 +1,7 @@
+import {SQL} from 'pg-async';
 import columnNameTransformer from '../src/transformers/columnNameTransformer';
 import registerColumnNameMapper from '../src/registerColumnNameMapper';
 import snakeCase from 'lodash.snakecase';
-import {SQL} from 'pg-async';
 
 SQL.registerTransform('columnName', columnNameTransformer);
 

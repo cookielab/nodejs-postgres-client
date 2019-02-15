@@ -1,9 +1,9 @@
+import {Client, PoolClient, QueryConfig, QueryResult} from 'pg';
+import {Connection} from './Connection';
+import {Lock} from 'semaphore-async-await';
 import DatabaseInsertStream from './streams/DatabaseInsertStream';
 import DatabaseReadStream from './streams/DatabaseReadStream';
 import QueryableConnection from './QueryableConnection';
-import {Client, PoolClient, QueryConfig, QueryResult} from 'pg';
-import {Lock} from 'semaphore-async-await';
-import {Connection} from './Connection';
 
 export type TransactionCallback<T> = (connection: Transaction<T>) => Promise<T> | T;
 

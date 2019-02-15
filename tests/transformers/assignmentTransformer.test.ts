@@ -1,6 +1,6 @@
+import {SQL} from 'pg-async';
 import assignmentTransformer from '../../src/transformers/assignmentTransformer';
 import columnNameTransformer from '../../src/transformers/columnNameTransformer';
-import {SQL} from 'pg-async';
 
 SQL.registerTransform('columnName', columnNameTransformer);
 

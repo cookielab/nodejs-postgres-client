@@ -1,5 +1,5 @@
-import Client from '../src/Client';
 import {Pool, PoolClient} from 'pg';
+import Client from '../src/Client';
 import Transaction from '../src/Transaction';
 
 const createDatabaseClientMock = (): jest.Mocked<PoolClient> => {

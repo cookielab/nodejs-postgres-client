@@ -1,6 +1,6 @@
-import BatchInsertCollector from '../BatchInsertCollector';
-import {Writable} from 'stream';
 import {Row} from '../Row';
+import {Writable} from 'stream';
+import BatchInsertCollector from '../BatchInsertCollector';
 
 export default class DatabaseInsertStream extends Writable {
     private readonly batchInsertCollector: BatchInsertCollector;

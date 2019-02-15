@@ -1,7 +1,7 @@
-import columnNamesTransformer from '../../src/transformers/columnNamesTransformer';
-import columnNameTransformer from '../../src/transformers/columnNameTransformer';
-import multiInsertTransformer from '../../src/transformers/multiInsertTransformer';
 import {SQL} from 'pg-async';
+import columnNameTransformer from '../../src/transformers/columnNameTransformer';
+import columnNamesTransformer from '../../src/transformers/columnNamesTransformer';
+import multiInsertTransformer from '../../src/transformers/multiInsertTransformer';
 import valueListTransformer from '../../src/transformers/valueListTransformer';
 import valuesTableTransformer from '../../src/transformers/valuesTableTransformer';
 

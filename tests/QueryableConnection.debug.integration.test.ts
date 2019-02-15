@@ -1,5 +1,5 @@
-import Client from '../src/Client';
 import {createPool} from './bootstrap';
+import Client from '../src/Client';
 import QueryError from '../src/errors/QueryError';
 
 describe('invalid query in production mode', () => {

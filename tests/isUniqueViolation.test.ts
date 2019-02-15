@@ -1,5 +1,5 @@
-import isUniqueViolation from '../src/isUniqueViolation';
 import QueryError from '../src/errors/QueryError';
+import isUniqueViolation from '../src/isUniqueViolation';
 
 describe('isUniqueViolation', () => {
     it('returns false for an error without code', () => {

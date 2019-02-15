@@ -1,5 +1,5 @@
-import columnNameTransformer from './transformers/columnNameTransformer';
 import {SQL} from 'pg-async';
+import columnNameTransformer from './transformers/columnNameTransformer';
 
 export type ColumnNameMapper = (column: string) => string;
 

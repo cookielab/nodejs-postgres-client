@@ -1,5 +1,5 @@
-import Transaction from '../src/Transaction';
 import {Client} from 'pg';
+import Transaction from '../src/Transaction';
 
 describe('transaction', () => {
     it('executes a transaction callback upon perform', async () => {

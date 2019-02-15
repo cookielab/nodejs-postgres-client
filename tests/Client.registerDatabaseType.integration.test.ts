@@ -1,5 +1,5 @@
-import Client from '../src/Client';
 import {createPool} from './bootstrap';
+import Client from '../src/Client';
 import TypeNotFoundError from '../src/errors/TypeNotFoundError';
 
 describe('query database integration', () => {

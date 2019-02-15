@@ -1,7 +1,7 @@
-import DatabaseReadStream from './streams/DatabaseReadStream';
 import {QueryConfig, QueryResult} from 'pg';
 import {Row} from './Row';
 import DatabaseInsertStream from './streams/DatabaseInsertStream';
+import DatabaseReadStream from './streams/DatabaseReadStream';
 
 export interface AsyncQueryable {
     query(input: QueryConfig | string, values?: any[]): Promise<QueryResult>;

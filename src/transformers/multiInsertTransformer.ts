@@ -1,5 +1,5 @@
-import SQL, {SqlFragment} from 'pg-async/lib/sql';
 import {Row} from '../Row';
+import SQL, {SqlFragment} from 'pg-async/lib/sql';
 
 const multiInsertTransformer = (rows: Row[]): SqlFragment => {
     if (rows.length <= 0) {

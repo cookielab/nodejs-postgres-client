@@ -1,9 +1,9 @@
 import * as prepareJavascriptValue from '../src/prepareJavascriptValue';
+import {SQL} from 'pg-async';
+import {createPool} from './bootstrap';
 import Client from '../src/Client';
 import columnNameTransformer from '../src/transformers/columnNameTransformer';
 import pgUtils from 'pg/lib/utils';
-import {SQL} from 'pg-async';
-import {createPool} from './bootstrap';
 
 SQL.registerTransform('columnName', columnNameTransformer);
 

@@ -1,5 +1,5 @@
-import {BatchInsertCollector} from '../src';
 import {AsyncQueryable} from '../src/Connection';
+import {BatchInsertCollector} from '../src';
 import {QueryConfig} from 'pg';
 
 const createItem = (id: number) => ({id});

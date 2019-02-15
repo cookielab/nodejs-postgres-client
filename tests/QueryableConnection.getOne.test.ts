@@ -1,6 +1,6 @@
-import OneRowExpectedError from '../src/errors/OneRowExpectedError';
 import {SQL} from '../src';
 import Client from '../src/Client';
+import OneRowExpectedError from '../src/errors/OneRowExpectedError';
 
 class CustomNotFoundError extends Error {
     private id: any;

@@ -1,7 +1,7 @@
+import {Pool, PoolClient} from 'pg';
 import {createPool} from '../bootstrap';
 import DatabaseReadStream from '../../src/streams/DatabaseReadStream';
 import QueryStream from 'pg-query-stream';
-import {Pool, PoolClient} from 'pg';
 
 describe('DatabaseReadStream', () => {
     const pool: Pool = createPool();

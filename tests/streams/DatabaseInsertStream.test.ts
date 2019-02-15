@@ -1,14 +1,14 @@
+import {SQL} from 'pg-async';
+import {WritableStreamAsyncWriter} from '@cookielab.io/stream-async-wrappers';
+import {createPool} from '../bootstrap';
 import BatchInsertCollector from '../../src/BatchInsertCollector';
 import Client from '../../src/Client';
-import columnNamesTransformer from '../../src/transformers/columnNamesTransformer';
-import columnNameTransformer from '../../src/transformers/columnNameTransformer';
-import {createPool} from '../bootstrap';
 import DatabaseInsertStream from '../../src/streams/DatabaseInsertStream';
+import columnNameTransformer from '../../src/transformers/columnNameTransformer';
+import columnNamesTransformer from '../../src/transformers/columnNamesTransformer';
 import multiInsertTransformer from '../../src/transformers/multiInsertTransformer';
-import {SQL} from 'pg-async';
 import valueListTransformer from '../../src/transformers/valueListTransformer';
 import valuesTableTransformer from '../../src/transformers/valuesTableTransformer';
-import {WritableStreamAsyncWriter} from '@cookielab.io/stream-async-wrappers';
 
 const TABLE_NAME = 'test_database_insert_stream';
 

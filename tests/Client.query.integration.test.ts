@@ -1,7 +1,7 @@
-import Client from '../src/Client';
-import {createPool} from './bootstrap';
 import {QueryResult} from 'pg';
 import {SQL} from 'pg-async';
+import {createPool} from './bootstrap';
+import Client from '../src/Client';
 
 const expectUltimateResult = (result: QueryResult) => {
     expect(result.rowCount).toBe(1);

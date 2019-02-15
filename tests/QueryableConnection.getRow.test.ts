@@ -1,5 +1,5 @@
-import OneRowExpectedError from '../src/errors/OneRowExpectedError';
 import Client from '../src/Client';
+import OneRowExpectedError from '../src/errors/OneRowExpectedError';
 
 describe('getRow', () => {
     it('returns only one row when found', async () => {

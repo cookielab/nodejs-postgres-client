@@ -1,6 +1,6 @@
+import {Row} from '../Row';
 import SQL, {SqlFragment} from 'pg-async/lib/sql';
 import sqlFragmentMapper from './sqlFragmentMapper';
-import {Row} from '../Row';
 
 const assignmentTransformer = (row: Row): SqlFragment => {
     return sqlFragmentMapper(
