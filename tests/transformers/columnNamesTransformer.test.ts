@@ -5,20 +5,20 @@ import columnNamesTransformer from '../../src/transformers/columnNamesTransforme
 SQL.registerTransform('columnName', columnNameTransformer);
 
 describe('column names transformer', () => {
-    it('joins and escapes column names', () => {
-        const result = columnNamesTransformer([
-            'column',
-            'another',
-        ]);
+	it('joins and escapes column names', () => {
+		const result = columnNamesTransformer([
+			'column',
+			'another',
+		]);
 
-        expect(result.text.trim()).toBe('"column", "another"');
-        expect(result.values).toEqual([]);
-    });
+		expect(result.text.trim()).toBe('"column", "another"');
+		expect(result.values).toEqual([]);
+	});
 
-    it('does nothing for empty column names', () => {
-        const result = columnNamesTransformer([]);
+	it('does nothing for empty column names', () => {
+		const result = columnNamesTransformer([]);
 
-        expect(result.text.trim()).toBe('');
-        expect(result.values).toEqual([]);
-    });
+		expect(result.text.trim()).toBe('');
+		expect(result.values).toEqual([]);
+	});
 });

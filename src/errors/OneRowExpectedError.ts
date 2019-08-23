@@ -1,10 +1,10 @@
 class OneRowExpectedError extends Error {
-    readonly count: number;
+	public readonly count: number;
 
-    constructor(count: number) {
-        super(`Exactly one row is expected, but the query returned "${count}" rows.`);
-        this.count = count;
-    }
+	public constructor(count: number) {
+		super(`Exactly one row is expected, but the query returned "${count}" rows.`);
+		this.count = count;
+	}
 }
 
 export default OneRowExpectedError;

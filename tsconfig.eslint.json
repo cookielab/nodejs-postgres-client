@@ -7,8 +7,5 @@
 		"outDir": "./lib",
 		"strict": true,
 		"esModuleInterop": true
-	},
-	"exclude": [
-		"tests/**/*.ts"
-	]
+	}
 }

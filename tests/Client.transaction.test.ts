@@ -1,93 +1,96 @@
+import {Connection} from '../src';
 import {Pool, PoolClient} from 'pg';
 import Client from '../src/Client';
 import Transaction from '../src/Transaction';
 
 const createDatabaseClientMock = (): jest.Mocked<PoolClient> => {
-    const databaseClient: jest.Mocked<PoolClient> = new (jest.fn())() as any;
-    databaseClient.release = jest.fn();
-    databaseClient.query = jest.fn();
+	const databaseClient: jest.Mocked<PoolClient> = new (jest.fn())();
+	databaseClient.release = jest.fn();
+	databaseClient.query = jest.fn();
 
-    return databaseClient;
+	return databaseClient;
 };
 
 const createPoolMock = (databaseClient: PoolClient): jest.Mocked<Pool> => {
-    const pool: jest.Mocked<Pool> = new (jest.fn())() as any;
-    pool.connect = jest.fn();
-    jest.spyOn(pool, 'connect')
-        .mockImplementation(() => Promise.resolve(databaseClient));
+	const pool: jest.Mocked<Pool> = new (jest.fn())();
+	pool.connect = jest.fn();
+	jest.spyOn(pool, 'connect')
+		.mockImplementation(() => Promise.resolve(databaseClient));
 
-    return pool;
+	return pool;
 };
 
 describe('client', () => {
-    it('begins and commits a successful transaction', async () => {
-        const databaseClient = createDatabaseClientMock();
-        const pool = createPoolMock(databaseClient);
-        const transactionCallback = async (connection: Transaction<number>): Promise<number> => {
-            await connection.query('SELECT 42');
-            return 42;
-        };
+	it('begins and commits a successful transaction', async () => {
+		const databaseClient = createDatabaseClientMock();
+		const pool = createPoolMock(databaseClient);
+		const transactionCallback = async (connection: Transaction<number>): Promise<number> => {
+			await connection.query('SELECT 42');
 
-        const client = new Client(pool);
-        const result = await client.transaction(transactionCallback);
-        expect(result).toBe(42);
+			return 42;
+		};
 
-        // Obtains a client from the pool
-        expect(pool.connect).toHaveBeenCalledTimes(1);
+		const client = new Client(pool);
+		const result = await client.transaction(transactionCallback);
+		expect(result).toBe(42);
 
-        // Performs transaction
-        expect(databaseClient.query).toHaveBeenCalledTimes(3);
-        expect(databaseClient.query).toHaveBeenNthCalledWith(1, 'BEGIN');
-        expect(databaseClient.query).toHaveBeenNthCalledWith(2, 'SELECT 42', undefined);
-        expect(databaseClient.query).toHaveBeenNthCalledWith(3, 'COMMIT');
+		// Obtains a client from the pool
+		expect(pool.connect).toHaveBeenCalledTimes(1);
 
-        // Releases client
-        expect(databaseClient.release).toHaveBeenCalledTimes(1);
+		// Performs transaction
+		expect(databaseClient.query).toHaveBeenCalledTimes(3);
+		expect(databaseClient.query).toHaveBeenNthCalledWith(1, 'BEGIN');
+		expect(databaseClient.query).toHaveBeenNthCalledWith(2, 'SELECT 42', undefined);
+		expect(databaseClient.query).toHaveBeenNthCalledWith(3, 'COMMIT');
 
-        // release without parameters for successful transaction
-        expect(databaseClient.release).toHaveBeenCalledWith();
-    });
+		// Releases client
+		expect(databaseClient.release).toHaveBeenCalledTimes(1);
 
-    it('begins and rollbacks an erroneous transaction', async () => {
-        const databaseClient = createDatabaseClientMock();
-        const pool = createPoolMock(databaseClient);
-        const transactionCallback = () => {
-            throw new Error('You shall not pass!');
-        };
+		// release without parameters for successful transaction
+		expect(databaseClient.release).toHaveBeenCalledWith();
+	});
 
-        const client = new Client(pool);
-        await expect(client.transaction(transactionCallback)).rejects.toEqual(new Error('You shall not pass!'));
+	it('begins and rollbacks an erroneous transaction', async () => {
+		const databaseClient = createDatabaseClientMock();
+		const pool = createPoolMock(databaseClient);
+		const transactionCallback = (): void => {
+			throw new Error('You shall not pass!');
+		};
 
-        // Obtains a client from the pool
-        expect(pool.connect).toHaveBeenCalledTimes(1);
+		const client = new Client(pool);
+		await expect(client.transaction(transactionCallback)).rejects.toEqual(new Error('You shall not pass!'));
 
-        // Performs transaction
-        expect(databaseClient.query).toHaveBeenCalledTimes(2);
-        expect(databaseClient.query).toHaveBeenNthCalledWith(1, 'BEGIN');
-        expect(databaseClient.query).toHaveBeenNthCalledWith(2, 'ROLLBACK');
+		// Obtains a client from the pool
+		expect(pool.connect).toHaveBeenCalledTimes(1);
 
-        // Releases client
-        expect(databaseClient.release).toHaveBeenCalledTimes(1);
+		// Performs transaction
+		expect(databaseClient.query).toHaveBeenCalledTimes(2);
+		expect(databaseClient.query).toHaveBeenNthCalledWith(1, 'BEGIN');
+		expect(databaseClient.query).toHaveBeenNthCalledWith(2, 'ROLLBACK');
 
-        // release with thrown error for failed transaction
-        expect(databaseClient.release).toHaveBeenCalledWith(new Error('You shall not pass!'));
-    });
+		// Releases client
+		expect(databaseClient.release).toHaveBeenCalledTimes(1);
 
-    it('performs a nested transaction on the same connection as the parent-transaction', async () => {
-        const databaseClient = createDatabaseClientMock();
-        const pool = createPoolMock(databaseClient);
-        const nestedTransactionCallback = jest.fn((connection) => {
-            expect(connection.connection).toBe(databaseClient);
-        });
+		// release with thrown error for failed transaction
+		expect(databaseClient.release).toHaveBeenCalledWith(new Error('You shall not pass!'));
+	});
 
-        const client = new Client(pool);
-        await client.transaction(async (connection) => {
-            await connection.transaction(nestedTransactionCallback);
-        });
+	it('performs a nested transaction on the same connection as the parent-transaction', async () => {
+		const databaseClient = createDatabaseClientMock();
+		const pool = createPoolMock(databaseClient);
+		const nestedTransactionCallback = jest.fn((connection: Connection) => {
+			// @ts-ignore The property is protected
+			expect(connection.connection).toBe(databaseClient);
+		});
 
-        expect(nestedTransactionCallback).toHaveBeenCalledTimes(1);
+		const client = new Client(pool);
+		await client.transaction(async (connection: Connection) => {
+			await connection.transaction(nestedTransactionCallback);
+		});
 
-        // Obtains a client from the pool only once
-        expect(pool.connect).toHaveBeenCalledTimes(1);
-    });
+		expect(nestedTransactionCallback).toHaveBeenCalledTimes(1);
+
+		// Obtains a client from the pool only once
+		expect(pool.connect).toHaveBeenCalledTimes(1);
+	});
 });

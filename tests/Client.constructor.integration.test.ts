@@ -8,89 +8,89 @@ import pgUtils from 'pg/lib/utils';
 SQL.registerTransform('columnName', columnNameTransformer);
 
 describe('constructor', () => {
-    const pool = createPool();
-    afterAll(async () => {
-        await pool.end();
-    });
+	const pool = createPool();
+	afterAll(async () => {
+		await pool.end();
+	});
 
-    describe('registerColumnNameMapper', () => {
-        const originalTransformer = SQL._transforms.columnname; // eslint-disable-line no-underscore-dangle
+	describe('registerColumnNameMapper', () => {
+		const originalTransformer = SQL._transforms.columnname; // eslint-disable-line no-underscore-dangle
 
-        it('does not overwrite the original column name transformer if custom is not defined', () => {
-            const client = new Client(pool);
-            expect(client).toBeInstanceOf(Client);
+		it('does not overwrite the original column name transformer if custom is not defined', () => {
+			const client = new Client(pool);
+			expect(client).toBeInstanceOf(Client);
 
-            expect(SQL._transforms.columnname).toBe(originalTransformer); // eslint-disable-line no-underscore-dangle
-        });
+			expect(SQL._transforms.columnname).toBe(originalTransformer); // eslint-disable-line no-underscore-dangle
+		});
 
-        it('overwrites the original column name transformer if custom is defined', () => {
-            const customColumnNameMapper = jest.fn();
-            const client = new Client(pool, {
-                columnNameMapper: customColumnNameMapper,
-            });
-            expect(client).toBeInstanceOf(Client);
+		it('overwrites the original column name transformer if custom is defined', () => {
+			const customColumnNameMapper = jest.fn();
+			const client = new Client(pool, {
+				columnNameMapper: customColumnNameMapper,
+			});
+			expect(client).toBeInstanceOf(Client);
 
-            expect(SQL._transforms.columnname).not.toBe(originalTransformer); // eslint-disable-line no-underscore-dangle
-        });
-    });
+			expect(SQL._transforms.columnname).not.toBe(originalTransformer); // eslint-disable-line no-underscore-dangle
+		});
+	});
 
-    describe('registerJavascriptTypes', () => {
-        const originalPrepareValue = pgUtils.prepareValue;
-        afterEach(() => {
-            pgUtils.prepareValue = originalPrepareValue;
-        });
+	describe('registerJavascriptTypes', () => {
+		const originalPrepareValue = pgUtils.prepareValue;
+		afterEach(() => {
+			pgUtils.prepareValue = originalPrepareValue;
+		});
 
-        it('does not overwrite the original prepareValue function if custom javascript types are not defined', () => {
-            const client = new Client(pool);
-            expect(client).toBeInstanceOf(Client);
+		it('does not overwrite the original prepareValue function if custom javascript types are not defined', () => {
+			const client = new Client(pool);
+			expect(client).toBeInstanceOf(Client);
 
-            expect(pgUtils.prepareValue).toBe(originalPrepareValue);
-        });
+			expect(pgUtils.prepareValue).toBe(originalPrepareValue);
+		});
 
-        it('overwrites the original prepareValue function if custom javascript types defined', () => {
-            const client = new Client(pool, {
-                javascriptTypes: [],
-            });
-            expect(client).toBeInstanceOf(Client);
+		it('overwrites the original prepareValue function if custom javascript types defined', () => {
+			const client = new Client(pool, {
+				javascriptTypes: [],
+			});
+			expect(client).toBeInstanceOf(Client);
 
-            expect(pgUtils.prepareValue).not.toBe(originalPrepareValue);
-        });
+			expect(pgUtils.prepareValue).not.toBe(originalPrepareValue);
+		});
 
-        it('uses custom prepareValue function if custom javascript types defined', () => {
-            const prepareValueMock = jest.spyOn(prepareJavascriptValue, 'default');
+		it('uses custom prepareValue function if custom javascript types defined', () => {
+			const prepareValueMock = jest.spyOn(prepareJavascriptValue, 'default');
 
-            const client = new Client(pool, {
-                javascriptTypes: [],
-            });
-            expect(client).toBeInstanceOf(Client);
+			const client = new Client(pool, {
+				javascriptTypes: [],
+			});
+			expect(client).toBeInstanceOf(Client);
 
-            pgUtils.prepareValue(null);
-            expect(prepareValueMock).toHaveBeenCalledTimes(1);
+			pgUtils.prepareValue(null);
+			expect(prepareValueMock).toHaveBeenCalledTimes(1);
 
-            prepareValueMock.mockReset();
-            prepareValueMock.mockRestore();
-        });
+			prepareValueMock.mockReset();
+			prepareValueMock.mockRestore();
+		});
 
-        it('allows multiple types with the same convert function', () => {
-            const returnValue = '';
-            const wrappedConvert = jest.fn(() => returnValue);
+		it('allows multiple types with the same convert function', () => {
+			const returnValue = '';
+			const wrappedConvert = jest.fn(() => returnValue);
 
-            const client = new Client(pool, {
-                javascriptTypes: [
-                    {
-                        match: () => true,
-                        convert: wrappedConvert,
-                    },
-                    {
-                        match: () => false,
-                        convert: wrappedConvert,
-                    },
-                ],
-            });
-            expect(client).toBeInstanceOf(Client);
+			const client = new Client(pool, {
+				javascriptTypes: [
+					{
+						match: () => true,
+						convert: wrappedConvert,
+					},
+					{
+						match: () => false,
+						convert: wrappedConvert,
+					},
+				],
+			});
+			expect(client).toBeInstanceOf(Client);
 
-            pgUtils.prepareValue(null);
-            expect(wrappedConvert).toHaveBeenCalledTimes(1);
-        });
-    });
+			pgUtils.prepareValue(null);
+			expect(wrappedConvert).toHaveBeenCalledTimes(1);
+		});
+	});
 });

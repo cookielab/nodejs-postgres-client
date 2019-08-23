@@ -19,100 +19,100 @@ SQL.registerTransform('valuesTable', valuesTableTransformer);
 SQL.registerTransform('multiInsert', multiInsertTransformer);
 
 describe('DatabaseInsertStream', () => {
-    const batchSize = 2;
+	const batchSize = 2;
 
-    const client: Client = new Client(createPool());
-    afterAll(async () => {
-        await client.end();
-    });
+	const client: Client = new Client(createPool());
+	afterAll(async () => {
+		await client.end();
+	});
 
-    let spyOnQuery: jest.SpyInstance = jest.fn();
-    beforeEach(async () => {
-        await client.query(SQL`CREATE TABLE IF NOT EXISTS $id${TABLE_NAME} (id BIGINT PRIMARY KEY, name TEXT NOT NULL)`);
-        await client.query(SQL`TRUNCATE $id${TABLE_NAME}`);
-        spyOnQuery = jest.spyOn(client, 'query');
-    });
-    afterEach(async () => {
-        spyOnQuery.mockReset();
-        spyOnQuery.mockRestore();
-        await client.query(SQL`DROP TABLE IF EXISTS $id${TABLE_NAME}`);
-    });
+	let spyOnQuery: jest.SpyInstance = jest.fn();
+	beforeEach(async () => {
+		await client.query(SQL`CREATE TABLE IF NOT EXISTS $id${TABLE_NAME} (id BIGINT PRIMARY KEY, name TEXT NOT NULL)`);
+		await client.query(SQL`TRUNCATE $id${TABLE_NAME}`);
+		spyOnQuery = jest.spyOn(client, 'query');
+	});
+	afterEach(async () => {
+		spyOnQuery.mockReset();
+		spyOnQuery.mockRestore();
+		await client.query(SQL`DROP TABLE IF EXISTS $id${TABLE_NAME}`);
+	});
 
-    it('flushes rows on batch size write and on the end', async () => {
-        const batchInsertCollector = new BatchInsertCollector(client, TABLE_NAME);
-        batchInsertCollector.setBatchSize(batchSize);
-        const insertStream = new DatabaseInsertStream(batchInsertCollector);
+	it('flushes rows on batch size write and on the end', async () => {
+		const batchInsertCollector = new BatchInsertCollector(client, TABLE_NAME);
+		batchInsertCollector.setBatchSize(batchSize);
+		const insertStream = new DatabaseInsertStream(batchInsertCollector);
 
-        const stream = new WritableStreamAsyncWriter(insertStream);
-        for (let i = 0; i < 7; i++) {
-            await stream.write({id: i, name: 'Lorem Ipsum'});
-        }
-        expect(spyOnQuery).toHaveBeenCalledTimes(3);
-        await stream.end();
-        expect(spyOnQuery).toHaveBeenCalledTimes(4);
-    });
+		const stream = new WritableStreamAsyncWriter(insertStream);
+		for (let i = 0; i < 7; i++) {
+			await stream.write({id: i, name: 'Lorem Ipsum'});
+		}
+		expect(spyOnQuery).toHaveBeenCalledTimes(3);
+		await stream.end();
+		expect(spyOnQuery).toHaveBeenCalledTimes(4);
+	});
 
-    it('emits event "inserting_finished" with information about inserted rows', async () => {
-        const batchInsertCollector = new BatchInsertCollector(client, TABLE_NAME);
-        batchInsertCollector.setBatchSize(batchSize);
-        batchInsertCollector.setQuerySuffix('ON CONFLICT DO NOTHING');
-        const insertStream = new DatabaseInsertStream(batchInsertCollector);
+	it('emits event "inserting_finished" with information about inserted rows', async () => {
+		const batchInsertCollector = new BatchInsertCollector(client, TABLE_NAME);
+		batchInsertCollector.setBatchSize(batchSize);
+		batchInsertCollector.setQuerySuffix('ON CONFLICT DO NOTHING');
+		const insertStream = new DatabaseInsertStream(batchInsertCollector);
 
-        const stream = new WritableStreamAsyncWriter(insertStream);
-        const eventPromise = new Promise((resolve) => {
-            insertStream.once('inserting_finished', (result) => {
-                expect(result).toHaveProperty('insertedRowCount', 7);
-                resolve();
-            });
-        });
+		const stream = new WritableStreamAsyncWriter(insertStream);
+		const eventPromise = new Promise((resolve: () => void) => {
+			insertStream.once('inserting_finished', (result: object) => {
+				expect(result).toHaveProperty('insertedRowCount', 7);
+				resolve();
+			});
+		});
 
-        for (let i = 0; i < 7; i++) {
-            await stream.write({id: i, name: 'Lorem Ipsum'});
-        }
+		for (let i = 0; i < 7; i++) {
+			await stream.write({id: i, name: 'Lorem Ipsum'});
+		}
 
-        // Add one extra row to make sure it will resolve conflicts correctly
-        await stream.write({id: 3, name: 'Lorem Ipsum'});
+		// Add one extra row to make sure it will resolve conflicts correctly
+		await stream.write({id: 3, name: 'Lorem Ipsum'});
 
-        await stream.end();
-        await eventPromise;
-    });
+		await stream.end();
+		await eventPromise;
+	});
 
-    it('triggers error on wrong insert on batch flush', async () => {
-        const batchInsertCollector = new BatchInsertCollector(client, TABLE_NAME);
-        batchInsertCollector.setBatchSize(batchSize);
-        const insertStream = new DatabaseInsertStream(batchInsertCollector);
-        const promise = new Promise((resolve, reject) => {
-            insertStream.once('error', reject);
-            insertStream.once('finish', () => {
-                insertStream.removeListener('error', reject);
-                resolve();
-            });
-        });
+	it('triggers error on wrong insert on batch flush', async () => {
+		const batchInsertCollector = new BatchInsertCollector(client, TABLE_NAME);
+		batchInsertCollector.setBatchSize(batchSize);
+		const insertStream = new DatabaseInsertStream(batchInsertCollector);
+		const promise = new Promise((resolve: () => void, reject: (error: Error) => void) => {
+			insertStream.once('error', reject);
+			insertStream.once('finish', () => {
+				insertStream.removeListener('error', reject);
+				resolve();
+			});
+		});
 
-        insertStream.write({id: 1, name: 'Lorem Ipsum'});
-        insertStream.write({id: 1, name: 'Lorem Ipsum'});
-        insertStream.end();
+		insertStream.write({id: 1, name: 'Lorem Ipsum'});
+		insertStream.write({id: 1, name: 'Lorem Ipsum'});
+		insertStream.end();
 
-        await expect(promise).rejects.toThrow();
-    });
+		await expect(promise).rejects.toThrow();
+	});
 
-    it('triggers error on wrong insert at the end', async () => {
-        const batchInsertCollector = new BatchInsertCollector(client, TABLE_NAME);
-        batchInsertCollector.setBatchSize(batchSize);
-        const insertStream = new DatabaseInsertStream(batchInsertCollector);
-        const promise = new Promise((resolve, reject) => {
-            insertStream.once('error', reject);
-            insertStream.once('finish', () => {
-                insertStream.removeListener('error', reject);
-                resolve();
-            });
-        });
+	it('triggers error on wrong insert at the end', async () => {
+		const batchInsertCollector = new BatchInsertCollector(client, TABLE_NAME);
+		batchInsertCollector.setBatchSize(batchSize);
+		const insertStream = new DatabaseInsertStream(batchInsertCollector);
+		const promise = new Promise((resolve: () => void, reject: (error: Error) => void) => {
+			insertStream.once('error', reject);
+			insertStream.once('finish', () => {
+				insertStream.removeListener('error', reject);
+				resolve();
+			});
+		});
 
-        insertStream.write({id: 1, name: 'Lorem Ipsum'});
-        insertStream.write({id: 2, name: 'Lorem Ipsum'});
-        insertStream.write({id: 1, name: 'Lorem Ipsum'});
-        insertStream.end();
+		insertStream.write({id: 1, name: 'Lorem Ipsum'});
+		insertStream.write({id: 2, name: 'Lorem Ipsum'});
+		insertStream.write({id: 1, name: 'Lorem Ipsum'});
+		insertStream.end();
 
-        await expect(promise).rejects.toThrow();
-    });
+		await expect(promise).rejects.toThrow();
+	});
 });

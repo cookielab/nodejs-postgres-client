@@ -30,13 +30,13 @@ export {Connection} from './Connection';
 export {Row} from './Row';
 
 export {
-    BatchInsertCollector,
-    Client,
-    DatabaseInsertStream,
-    DatabaseReadStream,
-    isUniqueViolation,
-    OneRowExpectedError,
-    SQL,
-    SqlFragment,
-    TypeNotFoundError,
+	BatchInsertCollector,
+	Client,
+	DatabaseInsertStream,
+	DatabaseReadStream,
+	isUniqueViolation,
+	OneRowExpectedError,
+	SQL,
+	SqlFragment,
+	TypeNotFoundError,
 };

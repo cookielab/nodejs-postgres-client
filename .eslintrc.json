@@ -1,3 +1,6 @@
 {
-    "extends": "@cookielab.io/server/typescript"
+    "extends": "@cookielab.io/server/typescript",
+	"parserOptions": {
+		"project": "./tsconfig.eslint.json"
+	}
 }

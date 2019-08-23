@@ -1,15 +1,21 @@
 import {Pool, PoolConfig} from 'pg';
 
-const connectionConfig: PoolConfig = {
-    host: process.env.DATABASE_HOST || '127.0.0.1',
-    user: process.env.DATABASE_USER || 'postgres_client',
-    password: process.env.DATABASE_PASSWORD || '',
-    database: process.env.DATABASE_NAME || 'postgres_client',
-    port: parseInt(process.env.DATABASE_PORT || '5432', 10) || 5432,
+const variable = (name: string, defaultValue: string): string => {
+	const value = process.env[name]; // eslint-disable-line no-process-env
+
+	return value != null ? value : defaultValue;
 };
 
-const createPool = (options: PoolConfig = {}) => new Pool(Object.assign({}, connectionConfig, options));
+const connectionConfig: PoolConfig = {
+	host: variable('DATABASE_HOST', '127.0.0.1'),
+	user: variable('DATABASE_USER', 'postgres_client'),
+	password: variable('DATABASE_PASSWORD', ''),
+	database: variable('DATABASE_NAME', 'postgres_client'),
+	port: Number.parseInt(variable('DATABASE_PORT', '5432'), 10),
+};
+
+const createPool = (options: PoolConfig = {}): Pool => new Pool(Object.assign({}, connectionConfig, options));
 
 export {
-    createPool,
+	createPool,
 };

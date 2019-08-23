@@ -6,17 +6,17 @@ import snakeCase from 'lodash.snakecase';
 SQL.registerTransform('columnName', columnNameTransformer);
 
 describe('registerColumnNameMapper', () => {
-    it('changes column name transformer using mapper', () => {
-        const columnName = 'loremIpsum';
+	it('changes column name transformer using mapper', () => {
+		const columnName = 'loremIpsum';
 
-        const fragmentBefore = SQL`$columnName${columnName}`;
-        expect(fragmentBefore.text.trim()).toBe('"loremIpsum"');
-        expect(fragmentBefore.values).toEqual([]);
+		const fragmentBefore = SQL`$columnName${columnName}`;
+		expect(fragmentBefore.text.trim()).toBe('"loremIpsum"');
+		expect(fragmentBefore.values).toEqual([]);
 
-        registerColumnNameMapper(snakeCase);
+		registerColumnNameMapper(snakeCase);
 
-        const fragmentAfter = SQL`$columnName${columnName}`;
-        expect(fragmentAfter.text.trim()).toBe('"lorem_ipsum"');
-        expect(fragmentBefore.values).toEqual([]);
-    });
+		const fragmentAfter = SQL`$columnName${columnName}`;
+		expect(fragmentAfter.text.trim()).toBe('"lorem_ipsum"');
+		expect(fragmentBefore.values).toEqual([]);
+	});
 });

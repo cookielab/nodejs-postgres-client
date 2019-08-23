@@ -5,11 +5,11 @@ type BaseType = string | number | boolean | Date | null;
 type RowValueType = BaseType | BaseType[];
 
 const valueListTransformer = (values: RowValueType[]): SqlFragment => {
-    return sqlFragmentMapper(
-        values,
-        (value: RowValueType) => SQL`${value}`,
-        ', '
-    );
+	return sqlFragmentMapper(
+		values,
+		(value: RowValueType) => SQL`${value}`,
+		', '
+	);
 };
 
 export default valueListTransformer;
