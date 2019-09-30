@@ -162,6 +162,35 @@ const values = [
 SQL`INSERT INTO table $multiInsert${values})`; // INSERT INTO table (string, number) VALUES ('value', 1234), ('value', 1234)
 ```
 
+### Types mapping
+The library automatically casts types in both ways (Insert and Select).
+ 
+#### Insert & Update
+When inserting, types are casted by Postres, meaning you can insert `string` to `INTEGER` postgres column and `INTEGER` will be inserted. 
+For a date, you can insert a `Date` object.
+You can also use any object which has `toSQL` function (e.g. `DateTime` from [`luxon`](https://www.npmjs.com/package/luxon)). The function/method will be called before the value is sent to the DB server.
+#### Select & Where conditions
+When selecting values from Postgres, values are casted in following manner:
+
+| PG column type           	| JS type 	| PG column value 			| JS value 	    							|
+|--------------------------	|---------	|---------------------------|-------------------------------------------|
+| ANY                      	| object  	| NULL            			| NULL         								|
+| BOOLEAN                  	| boolean 	| true            			| true         								|
+| DATETIME                 	| Date  	| 2019-09-30T08:49:52.157Z  | Mon Sep 30 2019 08:48:59 GMT+0000 (GMT) 	|
+| TIMESTAMP               	| Date  	| 2019-09-30T08:49:52.157Z  | Mon Sep 30 2019 08:48:59 GMT+0000 (GMT) 	|
+| TIMESTAMP WITH TIMEZONE  	| Date  	| 2019-09-30T08:49:52.157Z  | Mon Sep 30 2019 08:48:59 GMT+0000 (GMT) 	|
+| SMALLINT                 	| number  	| 42              			| 42           								|
+| INTEGER                  	| number  	| 42              			| 42           								|
+| DOUBLE PRECISION         	| number  	| 42              			| 42           								|
+| REAL                     	| number  	| 42              			| 42           								|
+| DECIMAL                  	| string  	| 42              			| '42'         								|
+| NUMBER                   	| string  	| 42              			| '42'         								|
+| BIGINT                   	| string  	| 42              			| '42'         								|
+| NUMERIC                  	| string  	| 42              			| '42'         								|
+| NUMERIC(PRECISION)       	| string  	| 42              			| '42'         								|
+| NUMERIC(PRECISION,SCALE) 	| string  	| 42              			| '40.00' (for `scale = 2`)     			|
+
+
 ### Custom types
 
 The library allows to register transformers in both directions:
