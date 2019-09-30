@@ -6,6 +6,7 @@ import BatchInsertCollector from './BatchInsertCollector';
 import DatabaseInsertStream from './streams/DatabaseInsertStream';
 import OneRowExpectedError from './errors/OneRowExpectedError';
 import QueryError from './errors/QueryError';
+import mapOneColumn from './mapOneColumn';
 
 interface ConnectionOptions {
 	readonly debug?: boolean;
@@ -85,6 +86,12 @@ export default abstract class QueryableConnection implements AsyncConnection {
 		const result = await this.query(input, values);
 
 		return result.rows;
+	}
+
+	public async getColumn<T>(input: QueryConfig | string, values?: any[], columnIndex: number = 0): Promise<readonly T[]> { // eslint-disable-line @typescript-eslint/no-explicit-any
+		const result = await this.query(input, values);
+
+		return mapOneColumn(result.rows, columnIndex);
 	}
 
 	public insertStream(tableName: string, querySuffix?: string, batchSize?: number): DatabaseInsertStream {
