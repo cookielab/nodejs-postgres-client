@@ -1,7 +1,8 @@
 import {Pool, PoolClient} from 'pg';
 import {createPool} from '../bootstrap';
 import DatabaseReadStream from '../../src/streams/DatabaseReadStream';
-import QueryStream from 'pg-query-stream';
+
+import QueryStream = require('pg-query-stream'); // eslint-disable-line @typescript-eslint/no-require-imports
 
 describe('DatabaseReadStream', () => {
 	const pool: Pool = createPool();

@@ -1,7 +1,8 @@
 import {SQL} from 'pg-async';
 import columnNameTransformer from '../src/transformers/columnNameTransformer';
 import registerColumnNameMapper from '../src/registerColumnNameMapper';
-import snakeCase from 'lodash.snakecase';
+
+import snakeCase = require('lodash.snakecase'); // eslint-disable-line @typescript-eslint/no-require-imports
 
 SQL.registerTransform('columnName', columnNameTransformer);
 

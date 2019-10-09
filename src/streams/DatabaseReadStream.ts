@@ -1,4 +1,4 @@
-import QueryStream from 'pg-query-stream';
+import QueryStream = require('pg-query-stream'); // eslint-disable-line @typescript-eslint/no-require-imports
 
 type Callback = () => Promise<void> | void;
 
