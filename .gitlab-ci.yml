@@ -19,15 +19,20 @@ stages:
     paths:
       - node_modules
 
-'yarn 8/10':
+'yarn 8/12':
   <<: *yarn_definition
   variables:
     NODE_VERSION: 8
 
-'yarn 10/10':
+'yarn 10/12':
   <<: *yarn_definition
   variables:
     NODE_VERSION: 10
+
+'yarn 12/12':
+  <<: *yarn_definition
+  variables:
+    NODE_VERSION: 12
 
 .lint_template: &lint_definition
   image: cookielab/nodejs:$NODE_VERSION
@@ -37,19 +42,26 @@ stages:
   script:
     - bin/lint
 
-'lint 8/10':
+'lint 8/12':
   <<: *lint_definition
   dependencies:
-    - 'yarn 8/10'
+    - 'yarn 8/12'
   variables:
     NODE_VERSION: 8
 
-'lint 10/10':
+'lint 10/12':
   <<: *lint_definition
   dependencies:
-    - 'yarn 10/10'
+    - 'yarn 10/12'
   variables:
     NODE_VERSION: 10
+
+'lint 12/12':
+  <<: *lint_definition
+  dependencies:
+    - 'yarn 12/12'
+  variables:
+    NODE_VERSION: 12
 
 .typescript_template: &typescript_definition
   image: cookielab/nodejs:$NODE_VERSION
@@ -59,19 +71,26 @@ stages:
   script:
     - bin/typescript
 
-'typescript 8/10':
+'typescript 8/12':
   <<: *typescript_definition
   dependencies:
-    - 'yarn 8/10'
+    - 'yarn 8/12'
   variables:
     NODE_VERSION: 8
 
-'typescript 10/10':
+'typescript 10/12':
   <<: *typescript_definition
   dependencies:
-    - 'yarn 10/10'
+    - 'yarn 10/12'
   variables:
     NODE_VERSION: 10
+
+'typescript 12/12':
+  <<: *typescript_definition
+  dependencies:
+    - 'yarn 12/12'
+  variables:
+    NODE_VERSION: 12
 
 .test_template: &test_definition
   image: cookielab/nodejs:$NODE_VERSION
@@ -87,10 +106,10 @@ stages:
     reports:
       junit: junit.xml
 
-'test 8/10':
+'test 8/12':
   <<: *test_definition
   dependencies:
-    - 'yarn 8/10'
+    - 'yarn 8/12'
   variables:
     NODE_VERSION: 8
     POSTGRES_PASSWORD: toor
@@ -100,12 +119,25 @@ stages:
     DATABASE_PASSWORD: toor
     DATABASE_NAME: postgres_client
 
-'test 10/10':
+'test 10/12':
   <<: *test_definition
   dependencies:
-    - 'yarn 10/10'
+    - 'yarn 10/12'
   variables:
     NODE_VERSION: 10
+    POSTGRES_PASSWORD: toor
+    POSTGRES_DB: postgres_client
+    DATABASE_HOST: postgres
+    DATABASE_USER: postgres
+    DATABASE_PASSWORD: toor
+    DATABASE_NAME: postgres_client
+
+'test 12/12':
+  <<: *test_definition
+  dependencies:
+    - 'yarn 12/12'
+  variables:
+    NODE_VERSION: 12
     POSTGRES_PASSWORD: toor
     POSTGRES_DB: postgres_client
     DATABASE_HOST: postgres
