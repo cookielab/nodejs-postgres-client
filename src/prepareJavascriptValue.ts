@@ -20,7 +20,8 @@ const prepareJavascriptValue = (
 	}
 
 	if (types.length !== 1) {
-		throw new Error(`There are more than one value converters for "${value}".`);
+		const valueString: string | number = typeof value !== 'string' && typeof value !== 'number' ? JSON.stringify(value) : value;
+		throw new Error(`There are more than one value converters for "${valueString}".`);
 	}
 
 	const [type] = types;

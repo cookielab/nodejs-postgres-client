@@ -15,7 +15,7 @@ const createPoolMock = (databaseClient: PoolClient): jest.Mocked<Pool> => {
 	const pool: jest.Mocked<Pool> = new (jest.fn())();
 	pool.connect = jest.fn();
 	jest.spyOn(pool, 'connect')
-		.mockImplementation(() => Promise.resolve(databaseClient));
+		.mockImplementation(async () => await Promise.resolve(databaseClient)); // eslint-disable-line @typescript-eslint/no-misused-promises
 
 	return pool;
 };

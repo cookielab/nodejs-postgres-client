@@ -14,7 +14,7 @@ describe('DatabaseReadStream', () => {
 	let stream: DatabaseReadStream = jest.fn() as any; // eslint-disable-line @typescript-eslint/no-explicit-any
 	beforeEach(async () => {
 		client = await pool.connect();
-		stream = await client.query(new DatabaseReadStream('SELECT 42 AS theAnswer'));
+		stream = client.query(new DatabaseReadStream('SELECT 42 AS theAnswer'));
 	});
 	afterEach(async () => {
 		await stream.close();

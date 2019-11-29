@@ -3,7 +3,7 @@ import Client from '../src/Client';
 import OneRowExpectedError from '../src/errors/OneRowExpectedError';
 
 class CustomNotFoundError extends Error {
-	private id: unknown;
+	private readonly id: unknown;
 	public constructor(id: unknown) {
 		super('Not found.');
 		this.id = id;

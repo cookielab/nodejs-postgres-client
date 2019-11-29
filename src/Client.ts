@@ -5,11 +5,15 @@ import DatabaseReadStream from './streams/DatabaseReadStream';
 import QueryableConnection from './QueryableConnection';
 import Transaction, {TransactionCallback} from './Transaction';
 import TypeNotFoundError from './errors/TypeNotFoundError';
-import pgUtils from 'pg/lib/utils';
+import pgUtils from 'pg/lib/utils'; // eslint-disable-line import/no-internal-modules
 import prepareJavascriptValue, {JavascriptType} from './prepareJavascriptValue';
 import registerColumnNameMapper, {ColumnNameMapper} from './registerColumnNameMapper';
 
 type TypeParserFunction = (value: string) => unknown;
+
+interface ArrayTypeParser {
+	parse(): unknown[] | null;
+}
 
 export interface DatabaseType {
 	readonly name: string;
@@ -28,7 +32,7 @@ const OPTIONS_DEFAULT = {
 
 const parseArray = (value: string, itemParser: TypeParserFunction): unknown[] | null => {
 	// @ts-ignore https://github.com/brianc/node-pg-types/issues/98
-	const parser = types.arrayParser.create(value, itemParser);
+	const parser: ArrayTypeParser = types.arrayParser.create(value, itemParser);
 
 	return parser.parse();
 };

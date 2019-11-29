@@ -50,8 +50,8 @@ describe('invalid query in debug mode', () => {
 	});
 
 	it('should throw custom error with full stack trace within transaction', async () => {
-		const promise = client.transaction((connection: Connection) => {
-			return connection.query('SELECT foo');
+		const promise = client.transaction(async (connection: Connection) => {
+			return await connection.query('SELECT foo');
 		});
 
 		await expect(promise)

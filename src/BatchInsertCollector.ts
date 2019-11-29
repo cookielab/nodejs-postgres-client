@@ -1,6 +1,6 @@
 import {AsyncQueryable} from './Connection';
 import {Row} from './Row';
-import SQL from 'pg-async/lib/sql';
+import {SQL} from 'pg-async';
 
 const maxBatchInsert = 1000;
 
@@ -59,7 +59,7 @@ class BatchInsertCollector {
 			await this.flush();
 		}
 
-		return promise;
+		return await promise;
 	}
 
 	public async flush(): Promise<void> {

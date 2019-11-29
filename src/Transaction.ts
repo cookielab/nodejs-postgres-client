@@ -84,7 +84,7 @@ class Transaction<T> extends QueryableConnection implements Connection {
 			typeof input === 'string' ? values : input.values,
 		);
 
-		const stream = await this.connection.query(query);
+		const stream = this.connection.query(query);
 
 		this.isReadStreamInProgress = true;
 		const resetStreamProgressHandler = (): void => {
@@ -94,7 +94,7 @@ class Transaction<T> extends QueryableConnection implements Connection {
 		stream.once('end', resetStreamProgressHandler);
 		stream.once('close', resetStreamProgressHandler);
 
-		return stream;
+		return await Promise.resolve(stream);
 	}
 
 	public validateUnfinishedInsertStreams(): void {

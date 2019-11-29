@@ -9,8 +9,8 @@ const processCallback = async (callback: Callback | undefined): Promise<void> =>
 };
 
 export default class DatabaseReadStream extends QueryStream {
-	public close(callback?: Callback): Promise<void> {
-		return new Promise((resolve: () => void, reject: (error: Error) => void): void => {
+	public async close(callback?: Callback): Promise<void> {
+		return await new Promise((resolve: () => void, reject: (error: Error) => void): void => {
 			try {
 				// @ts-ignore pg-query-stream types does not contain close method
 				super.close((): void => {
