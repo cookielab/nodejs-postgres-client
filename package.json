@@ -51,7 +51,7 @@
     "@cookielab.io/stream-async-wrappers": "0.4.0",
     "@types/jest": "24.0.25",
     "@types/lodash.snakecase": "4.1.6",
-    "@types/node": "12.12.22",
+    "@types/node": "13.1.2",
     "@types/pg": "7.14.0",
     "@types/pg-query-stream": "1.0.3",
     "@typescript-eslint/eslint-plugin": "2.14.0",
