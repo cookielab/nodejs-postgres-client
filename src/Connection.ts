@@ -9,6 +9,7 @@ export interface AsyncQueryable {
 
 export interface AsyncConnection extends AsyncQueryable {
 	findOne(input: QueryConfig | string, values?: any[]): Promise<Row | null>; // eslint-disable-line @typescript-eslint/no-explicit-any
+	findOneColumn<T>(input: QueryConfig | string, values?: readonly any[], columnIndex?: number): Promise<T | null>; // eslint-disable-line @typescript-eslint/no-explicit-any
 	getOne(input: QueryConfig, error: {new(...parameters: any[]): Error}): Promise<Row>; // eslint-disable-line @typescript-eslint/no-explicit-any
 	insert(table: string, values: Row): Promise<QueryResult>;
 

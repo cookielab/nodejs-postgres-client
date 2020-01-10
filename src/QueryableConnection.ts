@@ -35,6 +35,20 @@ export default abstract class QueryableConnection implements AsyncConnection {
 		return result[0];
 	}
 
+	public async findOneColumn<T>(input: QueryConfig | string, values?: any[], columnIndex: number = 0): Promise<T | null> { // eslint-disable-line @typescript-eslint/no-explicit-any
+		const result = await this.getColumn<T>(input, values, columnIndex);
+
+		if (result.length > 1) {
+			throw new OneRowExpectedError(result.length);
+		}
+
+		if (result.length === 0) {
+			return null;
+		}
+
+		return result[0];
+	}
+
 	public async getOne(input: QueryConfig, error: {new(...parameters: any[]): Error}): Promise<Row> { // eslint-disable-line @typescript-eslint/no-explicit-any
 		try {
 			return await this.getRow(input);
