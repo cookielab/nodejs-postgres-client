@@ -15,7 +15,7 @@ export interface AsyncConnection extends AsyncQueryable {
 
 	getRow(input: QueryConfig | string, values?: any[]): Promise<Row>; // eslint-disable-line @typescript-eslint/no-explicit-any
 	getRows(input: QueryConfig | string, values?: any[]): Promise<Row[]>; // eslint-disable-line @typescript-eslint/no-explicit-any
-	getColumn<T>(input: QueryConfig | string, values?: readonly any[]): Promise<readonly T[]>; // eslint-disable-line @typescript-eslint/no-explicit-any
+	getColumn<T>(input: QueryConfig | string, values?: readonly any[], columnIndex?: number): Promise<readonly T[]>; // eslint-disable-line @typescript-eslint/no-explicit-any
 	insertStream(tableName: string, querySuffix?: string, batchSize?: number): DatabaseInsertStream;
 }
 
