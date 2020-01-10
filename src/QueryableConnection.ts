@@ -108,6 +108,16 @@ export default abstract class QueryableConnection implements AsyncConnection {
 		return mapOneColumn(result.rows, columnIndex);
 	}
 
+	public async getOneColumn<T>(input: QueryConfig | string, values?: any[], columnIndex: number = 0): Promise<T> { // eslint-disable-line @typescript-eslint/no-explicit-any
+		const result = await this.getColumn<T>(input, values, columnIndex);
+
+		if (result.length !== 1) {
+			throw new OneRowExpectedError(result.length);
+		}
+
+		return result[0];
+	}
+
 	public insertStream(tableName: string, querySuffix?: string, batchSize?: number): DatabaseInsertStream {
 		const collector = new BatchInsertCollector(this, tableName);
 		if (querySuffix != null) {
