@@ -51,7 +51,7 @@ describe('DatabaseReadStream', () => {
 	it('rejects closing promise if an error occurs', async () => {
 		const uninitializedStream = new DatabaseReadStream('SELECT 42 AS theAnswer');
 		await expect(uninitializedStream.close())
-			.rejects
-			.toEqual(new TypeError('Cannot read property \'close\' of null'));
+			.resolves
+			.toEqual(undefined);
 	});
 });
