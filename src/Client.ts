@@ -12,7 +12,7 @@ import registerColumnNameMapper, {ColumnNameMapper} from './registerColumnNameMa
 type TypeParserFunction = (value: string) => unknown;
 
 interface ArrayTypeParser {
-	parse(): unknown[] | null;
+	parse(): readonly unknown[] | null;
 }
 
 export interface DatabaseType {
@@ -22,7 +22,7 @@ export interface DatabaseType {
 
 interface ClientOptions {
 	readonly debug?: boolean;
-	readonly javascriptTypes?: JavascriptType[];
+	readonly javascriptTypes?: readonly JavascriptType[];
 	readonly columnNameMapper?: ColumnNameMapper;
 }
 
@@ -30,7 +30,7 @@ const OPTIONS_DEFAULT: ClientOptions = {
 	debug: false,
 };
 
-const parseArray = (value: string, itemParser: TypeParserFunction): unknown[] | null => {
+const parseArray = (value: string, itemParser: TypeParserFunction): readonly unknown[] | null => {
 	// @ts-ignore https://github.com/brianc/node-pg-types/issues/98
 	const parser: ArrayTypeParser = types.arrayParser.create(value, itemParser);
 
@@ -77,10 +77,10 @@ class Client extends QueryableConnection implements Connection {
 		}
 	}
 
-	public async streamQuery(input: QueryConfig | string, values?: any[]): Promise<DatabaseReadStream> { // eslint-disable-line @typescript-eslint/no-explicit-any
+	public async streamQuery(input: QueryConfig | string, values?: readonly any[]): Promise<DatabaseReadStream> { // eslint-disable-line @typescript-eslint/no-explicit-any
 		const query = new DatabaseReadStream(
 			typeof input === 'string' ? input : input.text,
-			typeof input === 'string' ? values : input.values,
+			typeof input === 'string' ? values?.slice() : input.values,
 		);
 
 		const client = await this.pool.connect();
@@ -99,7 +99,7 @@ class Client extends QueryableConnection implements Connection {
 		return stream;
 	}
 
-	public async registerDatabaseTypes(databaseTypes: DatabaseType[]): Promise<void> {
+	public async registerDatabaseTypes(databaseTypes: readonly DatabaseType[]): Promise<void> {
 		const promises = databaseTypes.map(async (type: DatabaseType): Promise<void> => {
 			const {oid, typarray} = await this.getOne(SQL`
                 SELECT oid, typarray FROM pg_type WHERE typname = ${type.name}

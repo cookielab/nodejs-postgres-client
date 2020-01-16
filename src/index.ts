@@ -22,7 +22,9 @@ SQL.registerTransform('valuesTable', valuesTableTransformer);
 SQL.registerTransform('assign', assignmentTransformer);
 SQL.registerTransform('multiInsert', multiInsertTransformer);
 
+// @ts-ignore we want to replace it here
 delete SQL._transforms.insert; // eslint-disable-line no-underscore-dangle
+// @ts-ignore we want to replace it here
 delete SQL._transforms.insert_object; // eslint-disable-line no-underscore-dangle
 SQL.registerTransform('insert_object', 'insert', insertTransformer);
 

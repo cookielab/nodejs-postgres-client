@@ -2,7 +2,7 @@ import {Row} from '../Row';
 import SQL, {SqlFragment} from 'pg-async/lib/sql';
 import sqlFragmentMapper from './sqlFragmentMapper';
 
-const valuesTableTransformer = (rows: Row[]): SqlFragment => {
+const valuesTableTransformer = (rows: readonly Row[]): SqlFragment => {
 	const keys: readonly string[] = rows.length > 0 ? Object.keys(rows[0]) : [];
 
 	return sqlFragmentMapper(

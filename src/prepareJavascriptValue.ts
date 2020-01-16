@@ -10,10 +10,10 @@ export interface JavascriptType {
 
 const prepareJavascriptValue = (
 	originalPrepareValue: OriginalPrepareValue,
-	customTypes: JavascriptType[],
+	customTypes: readonly JavascriptType[],
 	value: unknown
 ): Buffer | string | null => {
-	const types = customTypes.filter((type: JavascriptType) => type.match(value));
+	const types: readonly JavascriptType[] = customTypes.filter((type: JavascriptType) => type.match(value));
 
 	if (types.length === 0) {
 		return originalPrepareValue(value);

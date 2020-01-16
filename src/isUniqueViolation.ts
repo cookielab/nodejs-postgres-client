@@ -1,7 +1,7 @@
 import QueryError from './errors/QueryError';
 
 interface DatabaseError extends Error {
-	code?: string;
+	readonly code?: string;
 }
 
 const isUniqueViolation = (error: Error): boolean => {

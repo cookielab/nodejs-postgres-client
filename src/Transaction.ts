@@ -66,7 +66,7 @@ class Transaction<T> extends QueryableConnection implements Connection {
 		}
 	}
 
-	public async query(input: QueryConfig | string, values?: any[]): Promise<QueryResult> { // eslint-disable-line @typescript-eslint/no-explicit-any
+	public async query(input: QueryConfig | string, values?: readonly any[]): Promise<QueryResult> { // eslint-disable-line @typescript-eslint/no-explicit-any
 		if (this.isReadStreamInProgress) {
 			throw new Error('Cannot run another query while one is still in progress. Possibly opened cursor.');
 		}
@@ -74,14 +74,14 @@ class Transaction<T> extends QueryableConnection implements Connection {
 		return await super.query(input, values);
 	}
 
-	public async streamQuery(input: QueryConfig | string, values?: any[]): Promise<DatabaseReadStream> { // eslint-disable-line @typescript-eslint/no-explicit-any
+	public async streamQuery(input: QueryConfig | string, values?: readonly any[]): Promise<DatabaseReadStream> { // eslint-disable-line @typescript-eslint/no-explicit-any
 		if (this.isReadStreamInProgress) {
 			throw new Error('Cannot run another query while one is still in progress. Possibly opened cursor.');
 		}
 
 		const query = new DatabaseReadStream(
 			typeof input === 'string' ? input : input.text,
-			typeof input === 'string' ? values : input.values,
+			typeof input === 'string' ? values?.slice() : input.values,
 		);
 
 		const stream = this.connection.query(query);

@@ -41,7 +41,7 @@ export default class DatabaseInsertStream extends Writable {
 		}
 	}
 
-	private getPromisesForAwait(): Array<Promise<void>> {
+	private getPromisesForAwait(): ReadonlyArray<Promise<void>> {
 		const promises = Array.from(this.promises.values());
 		this.promises = new Set();
 
