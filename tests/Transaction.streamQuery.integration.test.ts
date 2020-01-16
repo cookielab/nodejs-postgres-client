@@ -62,7 +62,14 @@ describe('transaction database integration', () => {
 			await expect(transaction.query('SELECT 41 AS theAnswer'))
 				.rejects
 				.toEqual(new Error('Cannot run another query while one is still in progress. Possibly opened cursor.'));
-			await stream.close();
+
+			const destroyPromise = new Promise((resolve: () => void): void => {
+				stream.once('close', resolve);
+			});
+
+			stream.destroy();
+
+			await destroyPromise;
 
 			const result = await transaction.query('SELECT 41 AS theAnswer');
 			expect(result.rowCount).toBe(1);
@@ -80,13 +87,26 @@ describe('transaction database integration', () => {
 			await expect(transaction.streamQuery('SELECT 41 AS theAnswer'))
 				.rejects
 				.toEqual(new Error('Cannot run another query while one is still in progress. Possibly opened cursor.'));
-			await stream.close();
 
-			const result = await transaction.query('SELECT 41 AS theAnswer');
-			expect(result.rowCount).toBe(1);
+			const destroyPromise = new Promise((resolve: () => void): void => {
+				stream.once('close', resolve);
+			});
 
-			const row = result.rows[0];
-			expect(row.theanswer).toBe(41);
+			stream.destroy();
+
+			await destroyPromise;
+
+			const stream2 = await transaction.streamQuery('SELECT 42 AS theAnswer');
+
+			expect(stream2).toBeInstanceOf(DatabaseReadStream);
+
+			const destroy2Promise = new Promise((resolve: () => void): void => {
+				stream2.once('close', resolve);
+			});
+
+			stream2.destroy();
+
+			await destroy2Promise;
 		});
 	});
 });

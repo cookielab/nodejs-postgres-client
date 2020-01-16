@@ -40,14 +40,14 @@
   },
   "dependencies": {
     "pg-async": "^3.1.0",
-    "pg-query-stream": "^2.0.0",
+    "pg-query-stream": "^3.0.0",
     "semaphore-async-await": "^1.5.1"
   },
   "peerDependencies": {
     "pg": "^7.11.0"
   },
   "devDependencies": {
-    "@cookielab.io/eslint-config-server": "3.0.5",
+    "@cookielab.io/eslint-config-server": "4.0.0",
     "@cookielab.io/stream-async-wrappers": "0.4.0",
     "@types/jest": "24.0.25",
     "@types/lodash.snakecase": "4.1.6",

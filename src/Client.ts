@@ -26,7 +26,7 @@ interface ClientOptions {
 	readonly columnNameMapper?: ColumnNameMapper;
 }
 
-const OPTIONS_DEFAULT = {
+const OPTIONS_DEFAULT: ClientOptions = {
 	debug: false,
 };
 

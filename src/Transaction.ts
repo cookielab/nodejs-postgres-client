@@ -12,7 +12,7 @@ interface TransactionOptions {
 	readonly savepointCounter?: number;
 }
 
-const OPTIONS_DEFAULT = {
+const OPTIONS_DEFAULT: TransactionOptions = {
 	debug: false,
 	savepointCounter: 0,
 };
@@ -88,6 +88,9 @@ class Transaction<T> extends QueryableConnection implements Connection {
 
 		this.isReadStreamInProgress = true;
 		const resetStreamProgressHandler = (): void => {
+			stream.removeListener('error', resetStreamProgressHandler);
+			stream.removeListener('end', resetStreamProgressHandler);
+			stream.removeListener('close', resetStreamProgressHandler);
 			this.isReadStreamInProgress = false;
 		};
 		stream.once('error', resetStreamProgressHandler);

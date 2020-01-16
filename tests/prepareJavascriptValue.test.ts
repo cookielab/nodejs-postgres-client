@@ -65,7 +65,7 @@ describe('prepareJavascriptValue', () => {
 		expect(originalPrepareValueMock).not.toHaveBeenCalled();
 	});
 
-	it('throws an error if more than one custom type match the value', () => {
+	it('throws an error if more than one custom type match the value (simple type)', () => {
 		const originalPrepareValueMock = jest.fn();
 		const match = jest.fn(() => true);
 		const convert = jest.fn();
@@ -78,5 +78,20 @@ describe('prepareJavascriptValue', () => {
 			],
 			42,
 		)).toThrow('There are more than one value converters for "42".');
+	});
+
+	it('throws an error if more than one custom type match the value (complex type)', () => {
+		const originalPrepareValueMock = jest.fn();
+		const match = jest.fn(() => true);
+		const convert = jest.fn();
+
+		expect(() => prepareJavascriptValue(
+			originalPrepareValueMock,
+			[
+				{match, convert},
+				{match, convert},
+			],
+			{foo: 'bar'},
+		)).toThrow('There are more than one value converters for "{"foo":"bar"}".');
 	});
 });

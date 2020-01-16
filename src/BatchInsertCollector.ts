@@ -4,6 +4,11 @@ import {SQL} from 'pg-async';
 
 const maxBatchInsert = 1000;
 
+interface PromiseHandlers {
+	readonly resolve: () => void;
+	readonly reject: (error: Error) => void;
+}
+
 class BatchInsertCollector {
 	private readonly connection: AsyncQueryable;
 	private readonly tableName: string;
@@ -12,7 +17,7 @@ class BatchInsertCollector {
 	private querySuffix: string;
 	private rows: Row[];
 	private batchPromise: Promise<void>;
-	private batchPromiseHandlers!: {resolve: () => void; reject: (error: Error) => void}; // ! - initialized in the promise created in the constructor
+	private batchPromiseHandlers!: PromiseHandlers; // ! - initialized in the promise created in the constructor
 
 	public constructor(connection: AsyncQueryable, tableName: string) {
 		this.connection = connection;
