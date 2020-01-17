@@ -76,25 +76,31 @@ class Client extends QueryableConnection implements Connection {
 	}
 
 	public async streamQuery(input: QueryConfig | string, values?: readonly any[]): Promise<DatabaseReadStream> { // eslint-disable-line @typescript-eslint/no-explicit-any
-		const query = new DatabaseReadStream(
-			typeof input === 'string' ? input : input.text,
-			typeof input === 'string' ? values?.slice() : input.values,
-		);
-
 		const client = await this.pool.connect();
-		const stream = client.query(query);
 
-		const clientReleaseListener = (error?: Error): void => {
-			stream.removeListener('error', clientReleaseListener);
-			stream.removeListener('end', clientReleaseListener);
-			stream.removeListener('close', clientReleaseListener);
+		try {
+			const stream = client.query(new DatabaseReadStream(
+				typeof input === 'string' ? input : input.text,
+				typeof input === 'string' ? values?.slice() : input.values,
+			));
+
+			const releaseEvents = ['error', 'close', 'end'];
+
+			const clientReleaseListener = (error?: Error): void => {
+				for (const event of releaseEvents) {
+					stream.removeListener(event, clientReleaseListener);
+				}
+				client.release(error);
+			};
+			for (const event of releaseEvents) {
+				stream.once(event, clientReleaseListener);
+			}
+
+			return stream;
+		} catch (error) {
 			client.release(error);
-		};
-		stream.once('error', clientReleaseListener);
-		stream.once('end', clientReleaseListener);
-		stream.once('close', clientReleaseListener);
-
-		return stream;
+			throw error;
+		}
 	}
 
 	public async registerDatabaseTypes(databaseTypes: readonly DatabaseType[]): Promise<void> {
