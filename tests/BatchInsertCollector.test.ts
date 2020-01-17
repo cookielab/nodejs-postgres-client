@@ -1,5 +1,5 @@
 import {AsyncQueryable} from '../src/Connection';
-import {BatchInsertCollector, Row} from '../src';
+import {BatchInsertCollector} from '../src';
 import {QueryConfig} from 'pg';
 
 const createItem = (id: number): {readonly id: number} => ({id});
@@ -7,7 +7,7 @@ const createItem = (id: number): {readonly id: number} => ({id});
 const sleep = (time: number): Promise<void> => new Promise((resolve: () => void) => setTimeout(resolve, time));
 
 describe('BatchInsertCollector', () => {
-	let insertedValues: Set<Row> = new Set();
+	let insertedValues: Set<unknown> = new Set();
 	const database: AsyncQueryable = {
 		query: async (sql: QueryConfig) => {
 			const beforeInserted = insertedValues.size;
@@ -90,6 +90,30 @@ describe('BatchInsertCollector', () => {
 
 		await collector.flush();
 		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(3);
+		expect(spyOnDatabaseQuery).toHaveBeenNthCalledWith(1, {
+			asymmetricMatch: (sql: QueryConfig): boolean => {
+				expect(sql.text).toBe('INSERT INTO "account" ("id") VALUES ($1),\n($2) ');
+				expect(sql.values).toEqual([1, 2]);
+
+				return true;
+			},
+		});
+		expect(spyOnDatabaseQuery).toHaveBeenNthCalledWith(2, {
+			asymmetricMatch: (sql: QueryConfig): boolean => {
+				expect(sql.text).toBe('INSERT INTO "account" ("id") VALUES ($1),\n($2) ');
+				expect(sql.values).toEqual([3, 4]);
+
+				return true;
+			},
+		});
+		expect(spyOnDatabaseQuery).toHaveBeenNthCalledWith(3, {
+			asymmetricMatch: (sql: QueryConfig): boolean => {
+				expect(sql.text).toBe('INSERT INTO "account" ("id") VALUES ($1) ');
+				expect(sql.values).toEqual([5]);
+
+				return true;
+			},
+		});
 	});
 
 	it('supports query suffix', async () => {
