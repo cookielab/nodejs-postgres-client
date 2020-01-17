@@ -2,30 +2,20 @@ import {Client} from 'pg';
 import Transaction from '../src/Transaction';
 
 describe('transaction', () => {
-	it('executes a transaction callback upon perform', async () => {
-		const client: jest.Mocked<Client> = new (jest.fn())();
-		const transactionCallback = jest.fn();
-
-		const transaction = new Transaction(client, transactionCallback);
-		await transaction.perform();
-
-		expect(transactionCallback).toHaveBeenCalledTimes(1);
-		expect(transactionCallback).toHaveBeenCalledWith(transaction);
-	});
-
 	it('executes a nested transaction callback upon perform', async () => {
 		const client: jest.Mocked<Client> = new (jest.fn())();
 		client.query = jest.fn();
 
 		const nestedTransactionCallback = jest.fn();
-
-		const transaction = new Transaction(client, async (connection: Transaction<void>): Promise<void> => {
+		const transactionCallback = async (connection: Transaction<void>): Promise<void> => {
 			await connection.transaction(nestedTransactionCallback);
-		});
-		await transaction.perform();
+		};
+
+		const transaction = new Transaction(client);
+		await transactionCallback(transaction);
 
 		expect(nestedTransactionCallback).toHaveBeenCalledTimes(1);
-		expect(nestedTransactionCallback).toHaveBeenCalledWith(new Transaction(client, nestedTransactionCallback, {
+		expect(nestedTransactionCallback).toHaveBeenCalledWith(new Transaction(client, {
 			savepointCounter: 1,
 		}));
 
@@ -38,25 +28,25 @@ describe('transaction', () => {
 		const client: jest.Mocked<Client> = new (jest.fn())();
 		client.query = jest.fn();
 
-		const nestedTransactionCallback = jest.fn();
-
 		const iterations = new Array(3).fill(null);
-
-		const transaction = new Transaction(client, async (connection: Transaction<void>): Promise<void> => {
+		const nestedTransactionCallback = jest.fn();
+		const transactionCallback = async (connection: Transaction<void>): Promise<void> => {
 			await Promise.all(iterations.map(async () => {
 				await connection.transaction(nestedTransactionCallback);
 			}));
-		});
-		await transaction.perform();
+		};
+
+		const transaction = new Transaction(client);
+		await transactionCallback(transaction);
 
 		expect(nestedTransactionCallback).toHaveBeenCalledTimes(3);
-		expect(nestedTransactionCallback).toHaveBeenNthCalledWith(1, new Transaction(client, nestedTransactionCallback, {
+		expect(nestedTransactionCallback).toHaveBeenNthCalledWith(1, new Transaction(client, {
 			savepointCounter: 1,
 		}));
-		expect(nestedTransactionCallback).toHaveBeenNthCalledWith(2, new Transaction(client, nestedTransactionCallback, {
+		expect(nestedTransactionCallback).toHaveBeenNthCalledWith(2, new Transaction(client, {
 			savepointCounter: 2,
 		}));
-		expect(nestedTransactionCallback).toHaveBeenNthCalledWith(3, new Transaction(client, nestedTransactionCallback, {
+		expect(nestedTransactionCallback).toHaveBeenNthCalledWith(3, new Transaction(client, {
 			savepointCounter: 3,
 		}));
 
@@ -76,16 +66,17 @@ describe('transaction', () => {
 		const nestedTransactionCallback = jest.fn(() => {
 			throw new Error('Failing transaction');
 		});
-
-		const transaction = new Transaction(client, async (connection: Transaction<void>): Promise<void> => {
+		const transactionCallback = async (connection: Transaction<void>): Promise<void> => {
 			await connection.transaction(nestedTransactionCallback);
-		});
-		await expect(transaction.perform())
+		};
+
+		const transaction = new Transaction(client);
+		await expect(transactionCallback(transaction))
 			.rejects
 			.toEqual(new Error('Failing transaction'));
 
 		expect(nestedTransactionCallback).toHaveBeenCalledTimes(1);
-		expect(nestedTransactionCallback).toHaveBeenCalledWith(new Transaction(client, nestedTransactionCallback, {
+		expect(nestedTransactionCallback).toHaveBeenCalledWith(new Transaction(client, {
 			savepointCounter: 1,
 		}));
 
@@ -102,11 +93,12 @@ describe('transaction', () => {
 			const stream = transaction.insertStream('not_existing_table');
 			stream.emit('finish');
 		});
-
-		const transaction = new Transaction(client, async (connection: Transaction<void>): Promise<void> => {
+		const transactionCallback = async (connection: Transaction<void>): Promise<void> => {
 			await connection.transaction(nestedTransactionCallback);
-		});
-		await transaction.perform();
+		};
+
+		const transaction = new Transaction(client);
+		await transactionCallback(transaction);
 
 		expect(client.query).toHaveBeenCalledTimes(2);
 		expect(client.query).toHaveBeenNthCalledWith(1, 'SAVEPOINT savepoint1', undefined);
@@ -120,11 +112,12 @@ describe('transaction', () => {
 		const nestedTransactionCallback = jest.fn((transaction: Transaction<void>): void => {
 			transaction.insertStream('not_existing_table');
 		});
-
-		const transaction = new Transaction(client, async (connection: Transaction<void>): Promise<void> => {
+		const transactionCallback = async (connection: Transaction<void>): Promise<void> => {
 			await connection.transaction(nestedTransactionCallback);
-		});
-		await expect(transaction.perform())
+		};
+
+		const transaction = new Transaction(client);
+		await expect(transactionCallback(transaction))
 			.rejects
 			.toEqual(new Error('Cannot commit transaction (or release savepoint) because there is 1 unfinished insert streams.'));
 
@@ -141,11 +134,12 @@ describe('transaction', () => {
 			const stream = transaction.deleteStream('not_existing_table');
 			stream.emit('finish');
 		});
-
-		const transaction = new Transaction(client, async (connection: Transaction<void>): Promise<void> => {
+		const transactionCallback = async (connection: Transaction<void>): Promise<void> => {
 			await connection.transaction(nestedTransactionCallback);
-		});
-		await transaction.perform();
+		};
+
+		const transaction = new Transaction(client);
+		await transactionCallback(transaction);
 
 		expect(client.query).toHaveBeenCalledTimes(2);
 		expect(client.query).toHaveBeenNthCalledWith(1, 'SAVEPOINT savepoint1', undefined);
@@ -159,11 +153,12 @@ describe('transaction', () => {
 		const nestedTransactionCallback = jest.fn((transaction: Transaction<void>): void => {
 			transaction.deleteStream('not_existing_table');
 		});
-
-		const transaction = new Transaction(client, async (connection: Transaction<void>): Promise<void> => {
+		const transactionCallback = async (connection: Transaction<void>): Promise<void> => {
 			await connection.transaction(nestedTransactionCallback);
-		});
-		await expect(transaction.perform())
+		};
+
+		const transaction = new Transaction(client);
+		await expect(transactionCallback(transaction))
 			.rejects
 			.toEqual(new Error('Cannot commit transaction (or release savepoint) because there is 1 unfinished delete streams.'));
 

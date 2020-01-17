@@ -18,34 +18,19 @@ interface TransactionOptions {
 
 class Transaction<T> extends QueryableConnection implements Connection {
 	protected readonly connection!: Client | PoolClient; // ! - initialized in parent constructor
-	private readonly transactionCallback: TransactionCallback<T>;
 	private readonly innerTransactionLock: Lock;
 	private savepointCounter: number;
 	private isReadStreamInProgress: boolean;
 	private insertStreamInProgressCount: number;
 	private deleteStreamInProgressCount: number;
 
-	public constructor(client: Client | PoolClient, transactionCallback: TransactionCallback<T>, options?: TransactionOptions) {
+	public constructor(client: Client | PoolClient, options?: TransactionOptions) {
 		super(client, options);
-		this.transactionCallback = transactionCallback;
 		this.innerTransactionLock = new Lock();
 		this.savepointCounter = options?.savepointCounter ?? 0;
 		this.isReadStreamInProgress = false;
 		this.insertStreamInProgressCount = 0;
 		this.deleteStreamInProgressCount = 0;
-	}
-
-	public async perform(): Promise<T> {
-		const result = await this.transactionCallback(this);
-
-		if (this.insertStreamInProgressCount > 0) {
-			throw new Error(`Cannot commit transaction (or release savepoint) because there is ${this.insertStreamInProgressCount} unfinished insert streams.`);
-		}
-		if (this.deleteStreamInProgressCount > 0) {
-			throw new Error(`Cannot commit transaction (or release savepoint) because there is ${this.deleteStreamInProgressCount} unfinished delete streams.`);
-		}
-
-		return result;
 	}
 
 	public async transaction<U>(transactionCallback: TransactionCallback<U>): Promise<U> {
@@ -56,11 +41,18 @@ class Transaction<T> extends QueryableConnection implements Connection {
 			await this.query(`SAVEPOINT ${savepointName}`);
 
 			try {
-				const transaction = new Transaction<U>(this.connection, transactionCallback, {
+				const transaction = new Transaction<U>(this.connection, {
 					debug: this.debug,
 					savepointCounter: this.savepointCounter,
 				});
-				const result = await transaction.perform();
+				const result = await transactionCallback(transaction);
+
+				if (transaction.insertStreamInProgressCount > 0) {
+					throw new Error(`Cannot commit transaction (or release savepoint) because there is ${transaction.insertStreamInProgressCount} unfinished insert streams.`);
+				}
+				if (transaction.deleteStreamInProgressCount > 0) {
+					throw new Error(`Cannot commit transaction (or release savepoint) because there is ${transaction.deleteStreamInProgressCount} unfinished delete streams.`);
+				}
 
 				await this.query(`RELEASE SAVEPOINT ${savepointName}`);
 
