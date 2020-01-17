@@ -14,7 +14,7 @@ describe('mapOneColumn', () => {
 			date: 'now',
 		}];
 
-		const result = mapOneColumn<string>(queryRows, 1);
+		const result = mapOneColumn<string, Row>(queryRows, 1);
 
 		expect(result).toStrictEqual(['row 42', 'row 666']);
 	});
@@ -22,7 +22,7 @@ describe('mapOneColumn', () => {
 	it('returns empty array when no values are present in rows', () => {
 		const queryRows: Row[] = [];
 
-		const result = mapOneColumn<number>(queryRows, 0);
+		const result = mapOneColumn<number, Row>(queryRows, 0);
 
 		expect(result).toStrictEqual([]);
 	});
@@ -38,6 +38,6 @@ describe('mapOneColumn', () => {
 			date: 'now',
 		}];
 
-		expect(() => mapOneColumn<string>(queryRows, 3)).toThrow(new NonExistentColumnIndexError(3, 2));
+		expect(() => mapOneColumn<string, Row>(queryRows, 3)).toThrow(new NonExistentColumnIndexError(3, 2));
 	});
 });
