@@ -2,10 +2,10 @@ import {Row} from '../Row';
 import {Writable} from 'stream';
 import BatchInsertCollector from '../BatchInsertCollector';
 
-export default class DatabaseInsertStream extends Writable {
-	private readonly batchInsertCollector: BatchInsertCollector;
+export default class DatabaseInsertStream<T extends Row> extends Writable {
+	private readonly batchInsertCollector: BatchInsertCollector<T>;
 
-	public constructor(batchInsertCollector: BatchInsertCollector) {
+	public constructor(batchInsertCollector: BatchInsertCollector<T>) {
 		super({
 			objectMode: true,
 			highWaterMark: batchInsertCollector.getBatchSize(),
@@ -13,9 +13,9 @@ export default class DatabaseInsertStream extends Writable {
 		this.batchInsertCollector = batchInsertCollector;
 	}
 
-	public _write(row: Row, encoding: string, callback: (error?: Error) => void): void {
+	public _write(record: T, encoding: string, callback: (error?: Error) => void): void {
 		try {
-			this.batchInsertCollector.add(row);
+			this.batchInsertCollector.add(record);
 			callback();
 		} catch (error) {
 			callback(error);

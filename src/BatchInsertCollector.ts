@@ -9,12 +9,12 @@ export interface CollectorOptions {
 	readonly querySuffix?: string;
 }
 
-class BatchInsertCollector {
+class BatchInsertCollector<T extends Row> {
 	private readonly connection: AsyncQueryable;
 	private readonly tableName: string;
 	private readonly options: Readonly<Required<CollectorOptions>>;
 	private insertedRowCount: number;
-	private rows: Row[];
+	private records: T[];
 	private flushPromise: Promise<void>;
 
 	public constructor(connection: AsyncQueryable, tableName: string, options?: CollectorOptions) {
@@ -27,7 +27,7 @@ class BatchInsertCollector {
 			querySuffix: options?.querySuffix ?? '',
 		};
 		this.insertedRowCount = 0;
-		this.rows = [];
+		this.records = [];
 		this.flushPromise = Promise.resolve();
 	}
 
@@ -39,20 +39,20 @@ class BatchInsertCollector {
 		return this.insertedRowCount;
 	}
 
-	public add(row: Row): void {
-		this.rows.push(row);
-		if (this.rows.length >= this.options.batchSize) {
+	public add(record: T): void {
+		this.records.push(record);
+		if (this.records.length >= this.options.batchSize) {
 			this.flushPromise = this.flush();
 		}
 	}
 
 	public async flush(): Promise<void> {
-		const rows = this.rows;
+		const records = this.records;
 		const promise = this.flushPromise;
-		this.rows = [];
+		this.records = [];
 		await promise;
-		if (rows.length > 0) {
-			const result = await this.connection.query(SQL`INSERT INTO $identifier${this.tableName} $multiInsert${rows} $raw${this.options.querySuffix}`);
+		if (records.length > 0) {
+			const result = await this.connection.query(SQL`INSERT INTO $identifier${this.tableName} $multiInsert${records} $raw${this.options.querySuffix}`);
 			this.insertedRowCount = this.insertedRowCount + result.rowCount;
 		}
 	}

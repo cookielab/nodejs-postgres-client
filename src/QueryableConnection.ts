@@ -118,9 +118,9 @@ export default abstract class QueryableConnection implements AsyncConnection {
 		return result[0];
 	}
 
-	public insertStream(tableName: string, options?: CollectorOptions): DatabaseInsertStream {
-		const collector = new BatchInsertCollector(this, tableName, options);
+	public insertStream<T extends Row>(tableName: string, options?: CollectorOptions): DatabaseInsertStream<T> {
+		const collector = new BatchInsertCollector<T>(this, tableName, options);
 
-		return new DatabaseInsertStream(collector);
+		return new DatabaseInsertStream<T>(collector);
 	}
 }
