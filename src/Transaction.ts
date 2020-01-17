@@ -41,7 +41,16 @@ class Transaction<T> extends QueryableConnection implements Connection {
 	}
 
 	public async perform(): Promise<T> {
-		return await this.transactionCallback(this);
+		const result = await this.transactionCallback(this);
+
+		if (this.insertStreamInProgressCount > 0) {
+			throw new Error(`Cannot commit transaction (or release savepoint) because there is ${this.insertStreamInProgressCount} unfinished insert streams.`);
+		}
+		if (this.deleteStreamInProgressCount > 0) {
+			throw new Error(`Cannot commit transaction (or release savepoint) because there is ${this.deleteStreamInProgressCount} unfinished delete streams.`);
+		}
+
+		return result;
 	}
 
 	public async transaction<U>(transactionCallback: TransactionCallback<U>): Promise<U> {
@@ -57,8 +66,6 @@ class Transaction<T> extends QueryableConnection implements Connection {
 					savepointCounter: this.savepointCounter,
 				});
 				const result = await transaction.perform();
-
-				transaction.validateUnfinishedStreams();
 
 				await this.query(`RELEASE SAVEPOINT ${savepointName}`);
 
@@ -104,15 +111,6 @@ class Transaction<T> extends QueryableConnection implements Connection {
 		stream.once('close', resetStreamProgressHandler);
 
 		return await Promise.resolve(stream);
-	}
-
-	public validateUnfinishedStreams(): void {
-		if (this.insertStreamInProgressCount > 0) {
-			throw new Error(`Cannot commit transaction (or release savepoint) because there is ${this.insertStreamInProgressCount} unfinished insert streams.`);
-		}
-		if (this.deleteStreamInProgressCount > 0) {
-			throw new Error(`Cannot commit transaction (or release savepoint) because there is ${this.deleteStreamInProgressCount} unfinished delete streams.`);
-		}
 	}
 
 	public insertStream<T extends Row = Row>(tableName: string, options?: InsertCollectorOptions): DatabaseInsertStream<T> {
