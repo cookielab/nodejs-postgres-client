@@ -16,34 +16,36 @@ interface TransactionOptions {
 	readonly savepointCounter?: number;
 }
 
+const SAVEPOINT_PREFIX = 'savepoint';
+
 class Transaction<T> extends QueryableConnection implements Connection {
 	protected readonly connection!: Client | PoolClient; // ! - initialized in parent constructor
 	private readonly innerTransactionLock: Lock;
-	private savepointCounter: number;
 	private isReadStreamInProgress: boolean;
 	private insertStreamInProgressCount: number;
 	private deleteStreamInProgressCount: number;
+	private readonly savepointCounter: number;
+	private readonly savepointName: string;
 
 	public constructor(client: Client | PoolClient, options?: TransactionOptions) {
 		super(client, options);
 		this.innerTransactionLock = new Lock();
-		this.savepointCounter = options?.savepointCounter ?? 0;
 		this.isReadStreamInProgress = false;
 		this.insertStreamInProgressCount = 0;
 		this.deleteStreamInProgressCount = 0;
+		this.savepointCounter = options?.savepointCounter ?? 1;
+		this.savepointName = `${SAVEPOINT_PREFIX}${this.savepointCounter}`;
 	}
 
 	public async transaction<U>(transactionCallback: TransactionCallback<U>): Promise<U> {
 		await this.innerTransactionLock.acquire();
 		try {
-			const savepointName = `savepoint${++this.savepointCounter}`;
-
-			await this.query(`SAVEPOINT ${savepointName}`);
+			await super.query(`SAVEPOINT ${this.savepointName}`);
 
 			try {
 				const transaction = new Transaction<U>(this.connection, {
 					debug: this.debug,
-					savepointCounter: this.savepointCounter,
+					savepointCounter: this.savepointCounter + 1,
 				});
 				const result = await transactionCallback(transaction);
 
@@ -54,11 +56,11 @@ class Transaction<T> extends QueryableConnection implements Connection {
 					throw new Error(`Cannot commit transaction (or release savepoint) because there is ${transaction.deleteStreamInProgressCount} unfinished delete streams.`);
 				}
 
-				await this.query(`RELEASE SAVEPOINT ${savepointName}`);
+				await super.query(`RELEASE SAVEPOINT ${this.savepointName}`);
 
 				return result;
 			} catch (error) {
-				await this.query(`ROLLBACK TO SAVEPOINT ${savepointName}`);
+				await super.query(`ROLLBACK TO SAVEPOINT ${this.savepointName}`);
 				throw error;
 			}
 		} finally {

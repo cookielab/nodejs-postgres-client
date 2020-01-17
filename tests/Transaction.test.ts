@@ -16,7 +16,7 @@ describe('transaction', () => {
 
 		expect(nestedTransactionCallback).toHaveBeenCalledTimes(1);
 		expect(nestedTransactionCallback).toHaveBeenCalledWith(new Transaction(client, {
-			savepointCounter: 1,
+			savepointCounter: 2,
 		}));
 
 		expect(client.query).toHaveBeenCalledTimes(2);
@@ -41,22 +41,22 @@ describe('transaction', () => {
 
 		expect(nestedTransactionCallback).toHaveBeenCalledTimes(3);
 		expect(nestedTransactionCallback).toHaveBeenNthCalledWith(1, new Transaction(client, {
-			savepointCounter: 1,
+			savepointCounter: 2,
 		}));
 		expect(nestedTransactionCallback).toHaveBeenNthCalledWith(2, new Transaction(client, {
 			savepointCounter: 2,
 		}));
 		expect(nestedTransactionCallback).toHaveBeenNthCalledWith(3, new Transaction(client, {
-			savepointCounter: 3,
+			savepointCounter: 2,
 		}));
 
 		expect(client.query).toHaveBeenCalledTimes(6);
 		expect(client.query).toHaveBeenNthCalledWith(1, 'SAVEPOINT savepoint1', undefined);
 		expect(client.query).toHaveBeenNthCalledWith(2, 'RELEASE SAVEPOINT savepoint1', undefined);
-		expect(client.query).toHaveBeenNthCalledWith(3, 'SAVEPOINT savepoint2', undefined);
-		expect(client.query).toHaveBeenNthCalledWith(4, 'RELEASE SAVEPOINT savepoint2', undefined);
-		expect(client.query).toHaveBeenNthCalledWith(5, 'SAVEPOINT savepoint3', undefined);
-		expect(client.query).toHaveBeenNthCalledWith(6, 'RELEASE SAVEPOINT savepoint3', undefined);
+		expect(client.query).toHaveBeenNthCalledWith(3, 'SAVEPOINT savepoint1', undefined);
+		expect(client.query).toHaveBeenNthCalledWith(4, 'RELEASE SAVEPOINT savepoint1', undefined);
+		expect(client.query).toHaveBeenNthCalledWith(5, 'SAVEPOINT savepoint1', undefined);
+		expect(client.query).toHaveBeenNthCalledWith(6, 'RELEASE SAVEPOINT savepoint1', undefined);
 	});
 
 	it('rollbacks a failing nested transaction callback upon perform', async () => {
@@ -77,7 +77,7 @@ describe('transaction', () => {
 
 		expect(nestedTransactionCallback).toHaveBeenCalledTimes(1);
 		expect(nestedTransactionCallback).toHaveBeenCalledWith(new Transaction(client, {
-			savepointCounter: 1,
+			savepointCounter: 2,
 		}));
 
 		expect(client.query).toHaveBeenCalledTimes(2);
