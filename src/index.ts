@@ -1,5 +1,6 @@
 import {SQL} from 'pg-async';
 import {SqlFragment} from 'pg-async/lib/sql';
+import BatchDeleteCollector from './BatchDeleteCollector';
 import BatchInsertCollector from './BatchInsertCollector';
 import Client from './Client';
 import DatabaseInsertStream from './streams/DatabaseInsertStream';
@@ -32,6 +33,7 @@ export {Connection} from './Connection';
 export {Row} from './Row';
 
 export {
+	BatchDeleteCollector,
 	BatchInsertCollector,
 	Client,
 	DatabaseInsertStream,
