@@ -2,7 +2,7 @@ import {AsyncConnection} from './Connection';
 import {Client, Pool, PoolClient, QueryConfig, QueryResult} from 'pg';
 import {Row} from './Row';
 import {SQL} from 'pg-async';
-import BatchInsertCollector from './BatchInsertCollector';
+import BatchInsertCollector, {CollectorOptions} from './BatchInsertCollector';
 import DatabaseInsertStream from './streams/DatabaseInsertStream';
 import OneRowExpectedError from './errors/OneRowExpectedError';
 import QueryError from './errors/QueryError';
@@ -118,14 +118,8 @@ export default abstract class QueryableConnection implements AsyncConnection {
 		return result[0];
 	}
 
-	public insertStream(tableName: string, querySuffix?: string, batchSize?: number): DatabaseInsertStream {
-		const collector = new BatchInsertCollector(this, tableName);
-		if (querySuffix != null) {
-			collector.setQuerySuffix(querySuffix);
-		}
-		if (batchSize != null) {
-			collector.setBatchSize(batchSize);
-		}
+	public insertStream(tableName: string, options?: CollectorOptions): DatabaseInsertStream {
+		const collector = new BatchInsertCollector(this, tableName, options);
 
 		return new DatabaseInsertStream(collector);
 	}

@@ -1,78 +1,106 @@
 import {AsyncQueryable} from '../src/Connection';
-import {BatchInsertCollector} from '../src';
+import {BatchInsertCollector, Row} from '../src';
 import {QueryConfig} from 'pg';
 
 const createItem = (id: number): {readonly id: number} => ({id});
 
+const sleep = (time: number): Promise<void> => new Promise((resolve: () => void) => setTimeout(resolve, time));
+
 describe('BatchInsertCollector', () => {
+	let insertedValues: Set<Row> = new Set();
 	const database: AsyncQueryable = {
-		query: () => Promise.resolve({
-			rowCount: 4,
-			command: '',
-			oid: 0,
-			fields: [],
-			rows: [{}, {}, {}, {}],
-		}),
+		query: async (sql: QueryConfig) => {
+			const beforeInserted = insertedValues.size;
+			for (const value of (sql.values ?? [])) {
+				insertedValues.add(value);
+			}
+			const rowCount: number = insertedValues.size - beforeInserted;
+
+			return await Promise.resolve({
+				rowCount: rowCount,
+				command: '',
+				oid: 0,
+				fields: [],
+				rows: new Array(rowCount).fill({}),
+			});
+		},
 	};
 
-	it('does not do anything on flush for no data', async () => {
-		const spyOnDatabaseQuery = jest.spyOn(database, 'query');
+	let spyOnDatabaseQuery: jest.SpyInstance | null = null;
+	beforeEach(() => {
+		spyOnDatabaseQuery = jest.spyOn(database, 'query');
+	});
+	afterEach(() => {
+		insertedValues = new Set();
+		spyOnDatabaseQuery?.mockRestore();
+	});
 
-		const collector = new BatchInsertCollector(database, 'account').setBatchSize(2);
+	it('use default batch size if less or equal to 0', () => {
+		const collector = new BatchInsertCollector(database, 'account', {
+			batchSize: 0,
+		});
+
+		expect(collector.getBatchSize()).toBe(1000);
+	});
+
+	it('use default batch size if greater than MAX', () => {
+		const collector = new BatchInsertCollector(database, 'account', {
+			batchSize: 1001,
+		});
+
+		expect(collector.getBatchSize()).toBe(1000);
+	});
+
+	it('does not do anything on flush for no rows added', async () => {
+		const collector = new BatchInsertCollector(database, 'account', {
+			batchSize: 2,
+		});
 		await collector.flush();
 
 		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(0);
+	});
 
-		spyOnDatabaseQuery.mockReset();
-		spyOnDatabaseQuery.mockRestore();
+	it('returns void after adding a row', () => {
+		const collector = new BatchInsertCollector(database, 'account', {
+			batchSize: 2,
+		});
+
+		const result = collector.add(createItem(1));
+
+		expect(result).toBeUndefined();
 	});
 
 	it('calls a query every batch size addition or on flush', async () => {
-		const spyOnDatabaseQuery = jest.spyOn(database, 'query');
+		const collector = new BatchInsertCollector(database, 'account', {
+			batchSize: 2,
+		});
 
-		const collector = new BatchInsertCollector(database, 'account').setBatchSize(2);
-
-		await Promise.all([
-			collector.add(createItem(1)),
-			collector.add(createItem(2)),
-			collector.add(createItem(3)),
-			collector.add(createItem(4)),
-		]);
+		collector.add(createItem(1));
+		collector.add(createItem(2));
+		collector.add(createItem(3));
+		collector.add(createItem(4));
+		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(0);
+		await sleep(10);
 		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(2);
 
-		const promise = collector.add(createItem(5));
+		collector.add(createItem(5));
+		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(2);
+		await sleep(10);
 		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(2);
 
 		await collector.flush();
-		await promise;
 		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(3);
-
-		spyOnDatabaseQuery.mockReset();
-		spyOnDatabaseQuery.mockRestore();
-	});
-
-	it('calls a query on next tick', async () => {
-		const spyOnDatabaseQuery = jest.spyOn(database, 'query');
-
-		const collector = new BatchInsertCollector(database, 'account').setBatchSize(2);
-
-		await collector.add(createItem(1));
-		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(1);
-
-		spyOnDatabaseQuery.mockReset();
-		spyOnDatabaseQuery.mockRestore();
 	});
 
 	it('supports query suffix', async () => {
-		const spyOnDatabaseQuery = jest.spyOn(database, 'query');
+		const collector = new BatchInsertCollector(database, 'account', {
+			batchSize: 2,
+			querySuffix: 'ON CONFLICT DO NOTHING',
+		});
 
-		const collector = new BatchInsertCollector(database, 'account')
-			.setBatchSize(2)
-			.setQuerySuffix('ON CONFLICT DO NOTHING');
-
-		await collector.add(createItem(1));
-
+		collector.add(createItem(1));
 		await collector.flush();
+
 		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(1);
 		expect(spyOnDatabaseQuery).toBeCalledWith({
 			asymmetricMatch: (sql: QueryConfig): boolean => {
@@ -82,32 +110,20 @@ describe('BatchInsertCollector', () => {
 				return true;
 			},
 		});
-
-		spyOnDatabaseQuery.mockReset();
-		spyOnDatabaseQuery.mockRestore();
-	});
-
-	it('use default batch size if less or equal to 0 or greater than MAX', () => {
-		const collector = new BatchInsertCollector(database, 'account');
-
-		collector.setBatchSize(0);
-		expect(collector.getBatchSize()).toBe(1000);
-
-		collector.setBatchSize(1001);
-		expect(collector.getBatchSize()).toBe(1000);
 	});
 
 	it('calculates amount of inserted rows by query result not by added rows', async () => {
-		const collector = new BatchInsertCollector(database, 'account')
-			.setQuerySuffix('ON CONFLICT DO NOTHING');
+		const collector = new BatchInsertCollector(database, 'account', {
+			batchSize: 2,
+			querySuffix: 'ON CONFLICT DO NOTHING',
+		});
 
-		await Promise.all([
-			collector.add(createItem(1)),
-			collector.add(createItem(2)),
-			collector.add(createItem(3)),
-			collector.add(createItem(4)),
-			collector.add(createItem(2)), // duplicate item
-		]);
+		collector.add(createItem(1));
+		collector.add(createItem(2));
+		collector.add(createItem(3));
+		collector.add(createItem(4));
+		collector.add(createItem(2)); // duplicate item
+		await collector.flush();
 
 		// Calling add method 5 times with a row but only 4 rows have been added because of duplicate key
 		expect(collector.getInsertedRowCount()).toBe(4);

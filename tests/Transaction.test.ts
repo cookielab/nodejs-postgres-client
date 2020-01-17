@@ -118,7 +118,7 @@ describe('transaction', () => {
 		client.query = jest.fn();
 
 		const nestedTransactionCallback = jest.fn((transaction: Transaction<void>): void => {
-			transaction.insertStream('not_existing_table', '', 1000);
+			transaction.insertStream('not_existing_table');
 		});
 
 		const transaction = new Transaction(client, async (connection: Transaction<void>): Promise<void> => {
