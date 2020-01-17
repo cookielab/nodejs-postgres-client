@@ -16,11 +16,6 @@ interface TransactionOptions {
 	readonly savepointCounter?: number;
 }
 
-const OPTIONS_DEFAULT: TransactionOptions = {
-	debug: false,
-	savepointCounter: 0,
-};
-
 class Transaction<T> extends QueryableConnection implements Connection {
 	protected readonly connection!: Client | PoolClient; // ! - initialized in parent constructor
 	private readonly transactionCallback: TransactionCallback<T>;
@@ -30,11 +25,11 @@ class Transaction<T> extends QueryableConnection implements Connection {
 	private insertStreamInProgressCount: number;
 	private deleteStreamInProgressCount: number;
 
-	public constructor(client: Client | PoolClient, transactionCallback: TransactionCallback<T>, options: TransactionOptions = OPTIONS_DEFAULT) {
+	public constructor(client: Client | PoolClient, transactionCallback: TransactionCallback<T>, options?: TransactionOptions) {
 		super(client, options);
 		this.transactionCallback = transactionCallback;
 		this.innerTransactionLock = new Lock();
-		this.savepointCounter = options.savepointCounter != null ? options.savepointCounter : 0;
+		this.savepointCounter = options?.savepointCounter ?? 0;
 		this.isReadStreamInProgress = false;
 		this.insertStreamInProgressCount = 0;
 		this.deleteStreamInProgressCount = 0;

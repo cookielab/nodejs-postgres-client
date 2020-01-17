@@ -18,9 +18,9 @@ export default abstract class QueryableConnection implements AsyncConnection {
 	protected readonly connection: Client | Pool | PoolClient;
 	protected readonly debug: boolean;
 
-	protected constructor(connection: Client | Pool | PoolClient, options: ConnectionOptions) {
+	protected constructor(connection: Client | Pool | PoolClient, options?: ConnectionOptions) {
 		this.connection = connection;
-		this.debug = options.debug === true;
+		this.debug = options?.debug === true;
 	}
 
 	public async findOne<T extends Row = Row>(input: QueryConfig | string, values?: readonly any[]): Promise<T | null> { // eslint-disable-line @typescript-eslint/no-explicit-any

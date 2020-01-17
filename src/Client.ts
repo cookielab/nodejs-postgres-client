@@ -26,10 +26,6 @@ interface ClientOptions {
 	readonly columnNameMapper?: ColumnNameMapper;
 }
 
-const OPTIONS_DEFAULT: ClientOptions = {
-	debug: false,
-};
-
 const parseArray = (value: string, itemParser: TypeParserFunction): readonly unknown[] | null => {
 	// @ts-ignore https://github.com/brianc/node-pg-types/issues/98
 	const parser: ArrayTypeParser = types.arrayParser.create(value, itemParser);
@@ -40,15 +36,15 @@ const parseArray = (value: string, itemParser: TypeParserFunction): readonly unk
 class Client extends QueryableConnection implements Connection {
 	private readonly pool: Pool;
 
-	public constructor(pool: Pool, options: ClientOptions = OPTIONS_DEFAULT) {
+	public constructor(pool: Pool, options?: ClientOptions) {
 		super(pool, options);
 		this.pool = pool;
 
-		if (options.javascriptTypes != null) {
+		if (options?.javascriptTypes != null) {
 			const originalPrepareValue = pgUtils.prepareValue;
 			pgUtils.prepareValue = prepareJavascriptValue.bind(null, originalPrepareValue, options.javascriptTypes);
 		}
-		if (options.columnNameMapper != null) {
+		if (options?.columnNameMapper != null) {
 			registerColumnNameMapper(options.columnNameMapper);
 		}
 	}
