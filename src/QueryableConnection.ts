@@ -37,7 +37,7 @@ export default abstract class QueryableConnection implements AsyncConnection {
 		return result[0];
 	}
 
-	public async findOneColumn<T>(input: QueryConfig | string, values?: readonly any[], columnIndex: number = 0): Promise<T | null> { // eslint-disable-line @typescript-eslint/no-explicit-any
+	public async findOneColumn<T extends any = unknown>(input: QueryConfig | string, values?: readonly any[], columnIndex: number = 0): Promise<T | null> { // eslint-disable-line @typescript-eslint/no-explicit-any
 		const result = await this.getColumn<T>(input, values, columnIndex);
 
 		if (result.length > 1) {
@@ -104,13 +104,13 @@ export default abstract class QueryableConnection implements AsyncConnection {
 		return result.rows;
 	}
 
-	public async getColumn<T>(input: QueryConfig | string, values?: readonly any[], columnIndex: number = 0): Promise<readonly T[]> { // eslint-disable-line @typescript-eslint/no-explicit-any
+	public async getColumn<T extends any = unknown>(input: QueryConfig | string, values?: readonly any[], columnIndex: number = 0): Promise<readonly T[]> { // eslint-disable-line @typescript-eslint/no-explicit-any
 		const result = await this.query(input, values);
 
 		return mapOneColumn(result.rows, columnIndex);
 	}
 
-	public async getOneColumn<T>(input: QueryConfig | string, values?: readonly any[], columnIndex: number = 0): Promise<T> { // eslint-disable-line @typescript-eslint/no-explicit-any
+	public async getOneColumn<T extends any = unknown>(input: QueryConfig | string, values?: readonly any[], columnIndex: number = 0): Promise<T> { // eslint-disable-line @typescript-eslint/no-explicit-any
 		const result = await this.getColumn<T>(input, values, columnIndex);
 
 		if (result.length !== 1) {
@@ -126,7 +126,7 @@ export default abstract class QueryableConnection implements AsyncConnection {
 		return new DatabaseInsertStream<T>(collector);
 	}
 
-	public deleteStream<T extends OneDatabaseValue>(tableName: string, options?: DeleteCollectorOptions): DatabaseDeleteStream<T> {
+	public deleteStream<T extends OneDatabaseValue = string>(tableName: string, options?: DeleteCollectorOptions): DatabaseDeleteStream<T> {
 		const collector = new BatchDeleteCollector<T>(this, tableName, options);
 
 		return new DatabaseDeleteStream<T>(collector);

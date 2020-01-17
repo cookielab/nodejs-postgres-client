@@ -126,7 +126,7 @@ class Transaction<T> extends QueryableConnection implements Connection {
 		return stream;
 	}
 
-	public deleteStream<T extends OneDatabaseValue>(tableName: string, options?: DeleteCollectorOptions): DatabaseDeleteStream<T> {
+	public deleteStream<T extends OneDatabaseValue = string>(tableName: string, options?: DeleteCollectorOptions): DatabaseDeleteStream<T> {
 		const stream = super.deleteStream<T>(tableName, options);
 
 		stream.once('finish', (): void => {
