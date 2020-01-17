@@ -1,6 +1,6 @@
 import {Client, PoolClient, QueryConfig, QueryResult} from 'pg';
-import {CollectorOptions} from './BatchInsertCollector';
 import {Connection} from './Connection';
+import {InsertCollectorOptions} from './BatchInsertCollector';
 import {Lock} from 'semaphore-async-await';
 import {Row} from './Row';
 import DatabaseInsertStream from './streams/DatabaseInsertStream';
@@ -108,7 +108,7 @@ class Transaction<T> extends QueryableConnection implements Connection {
 		}
 	}
 
-	public insertStream<T extends Row = Row>(tableName: string, options?: CollectorOptions): DatabaseInsertStream<T> {
+	public insertStream<T extends Row = Row>(tableName: string, options?: InsertCollectorOptions): DatabaseInsertStream<T> {
 		const stream = super.insertStream<T>(tableName, options);
 
 		stream.once('finish', (): void => {

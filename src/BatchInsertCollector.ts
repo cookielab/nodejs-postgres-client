@@ -4,7 +4,7 @@ import {SQL} from 'pg-async';
 
 const MAX_BATCH_SIZE = 1000;
 
-export interface CollectorOptions {
+export interface InsertCollectorOptions {
 	readonly batchSize?: number;
 	readonly querySuffix?: string;
 }
@@ -12,12 +12,12 @@ export interface CollectorOptions {
 class BatchInsertCollector<T extends Row> {
 	private readonly connection: AsyncQueryable;
 	private readonly tableName: string;
-	private readonly options: Readonly<Required<CollectorOptions>>;
+	private readonly options: Readonly<Required<InsertCollectorOptions>>;
 	private insertedRowCount: number;
 	private records: T[];
 	private flushPromise: Promise<void>;
 
-	public constructor(connection: AsyncQueryable, tableName: string, options?: CollectorOptions) {
+	public constructor(connection: AsyncQueryable, tableName: string, options?: InsertCollectorOptions) {
 		this.connection = connection;
 		this.tableName = tableName;
 		this.options = {

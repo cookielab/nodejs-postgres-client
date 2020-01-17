@@ -1,4 +1,4 @@
-import {CollectorOptions} from './BatchInsertCollector';
+import {InsertCollectorOptions} from './BatchInsertCollector';
 import {QueryConfig, QueryResult} from 'pg';
 import {Row} from './Row';
 import DatabaseInsertStream from './streams/DatabaseInsertStream';
@@ -18,7 +18,7 @@ export interface AsyncConnection extends AsyncQueryable {
 	getRows<T extends Row = Row>(input: QueryConfig | string, values?: readonly any[]): Promise<readonly T[]>; // eslint-disable-line @typescript-eslint/no-explicit-any
 	getColumn<T>(input: QueryConfig | string, values?: readonly any[], columnIndex?: number): Promise<readonly T[]>; // eslint-disable-line @typescript-eslint/no-explicit-any
 	getOneColumn<T>(input: QueryConfig | string, values?: readonly any[], columnIndex?: number): Promise<T>; // eslint-disable-line @typescript-eslint/no-explicit-any
-	insertStream<T extends Row = Row>(tableName: string, options?: CollectorOptions): DatabaseInsertStream<T>;
+	insertStream<T extends Row = Row>(tableName: string, options?: InsertCollectorOptions): DatabaseInsertStream<T>;
 }
 
 export interface Connection extends AsyncConnection {
