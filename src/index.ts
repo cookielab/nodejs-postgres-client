@@ -3,6 +3,7 @@ import {SqlFragment} from 'pg-async/lib/sql';
 import BatchDeleteCollector from './BatchDeleteCollector';
 import BatchInsertCollector from './BatchInsertCollector';
 import Client from './Client';
+import DatabaseDeleteStream from './streams/DatabaseDeleteStream';
 import DatabaseInsertStream from './streams/DatabaseInsertStream';
 import DatabaseReadStream from './streams/DatabaseReadStream';
 import OneRowExpectedError from './errors/OneRowExpectedError';
@@ -36,6 +37,7 @@ export {
 	BatchDeleteCollector,
 	BatchInsertCollector,
 	Client,
+	DatabaseDeleteStream,
 	DatabaseInsertStream,
 	DatabaseReadStream,
 	isUniqueViolation,
