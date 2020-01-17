@@ -5,20 +5,20 @@ import DatabaseInsertStream from './streams/DatabaseInsertStream';
 import DatabaseReadStream from './streams/DatabaseReadStream';
 
 export interface AsyncQueryable {
-	query(input: QueryConfig | string, values?: readonly any[]): Promise<QueryResult>; // eslint-disable-line @typescript-eslint/no-explicit-any
+	query<T extends Row = Row>(input: QueryConfig | string, values?: readonly any[]): Promise<QueryResult<T>>; // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
 export interface AsyncConnection extends AsyncQueryable {
-	findOne(input: QueryConfig | string, values?: readonly any[]): Promise<Row | null>; // eslint-disable-line @typescript-eslint/no-explicit-any
+	findOne<T extends Row = Row>(input: QueryConfig | string, values?: readonly any[]): Promise<T | null>; // eslint-disable-line @typescript-eslint/no-explicit-any
 	findOneColumn<T>(input: QueryConfig | string, values?: readonly any[], columnIndex?: number): Promise<T | null>; // eslint-disable-line @typescript-eslint/no-explicit-any
-	getOne(input: QueryConfig, error: {new(...parameters: readonly any[]): Error}): Promise<Row>; // eslint-disable-line @typescript-eslint/no-explicit-any
-	insert(table: string, values: Row): Promise<QueryResult>;
+	getOne<T extends Row = Row>(input: QueryConfig, error: {new(...parameters: readonly any[]): Error}): Promise<T>; // eslint-disable-line @typescript-eslint/no-explicit-any
+	insert<T extends Row = Row>(table: string, values: T): Promise<QueryResult<T>>;
 
-	getRow(input: QueryConfig | string, values?: readonly any[]): Promise<Row>; // eslint-disable-line @typescript-eslint/no-explicit-any
-	getRows(input: QueryConfig | string, values?: readonly any[]): Promise<readonly Row[]>; // eslint-disable-line @typescript-eslint/no-explicit-any
+	getRow<T extends Row = Row>(input: QueryConfig | string, values?: readonly any[]): Promise<T>; // eslint-disable-line @typescript-eslint/no-explicit-any
+	getRows<T extends Row = Row>(input: QueryConfig | string, values?: readonly any[]): Promise<readonly T[]>; // eslint-disable-line @typescript-eslint/no-explicit-any
 	getColumn<T>(input: QueryConfig | string, values?: readonly any[], columnIndex?: number): Promise<readonly T[]>; // eslint-disable-line @typescript-eslint/no-explicit-any
 	getOneColumn<T>(input: QueryConfig | string, values?: readonly any[], columnIndex?: number): Promise<T>; // eslint-disable-line @typescript-eslint/no-explicit-any
-	insertStream<T extends Row>(tableName: string, options?: CollectorOptions): DatabaseInsertStream<T>;
+	insertStream<T extends Row = Row>(tableName: string, options?: CollectorOptions): DatabaseInsertStream<T>;
 }
 
 export interface Connection extends AsyncConnection {

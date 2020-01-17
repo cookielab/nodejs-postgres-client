@@ -48,7 +48,7 @@ class Transaction<T> extends QueryableConnection implements Connection {
 			await this.query(`SAVEPOINT ${savepointName}`);
 
 			try {
-				const transaction = new Transaction(this.connection, transactionCallback, {
+				const transaction = new Transaction<U>(this.connection, transactionCallback, {
 					debug: this.debug,
 					savepointCounter: this.savepointCounter,
 				});
@@ -68,12 +68,12 @@ class Transaction<T> extends QueryableConnection implements Connection {
 		}
 	}
 
-	public async query(input: QueryConfig | string, values?: readonly any[]): Promise<QueryResult> { // eslint-disable-line @typescript-eslint/no-explicit-any
+	public async query<T extends Row = Row>(input: QueryConfig | string, values?: readonly any[]): Promise<QueryResult<T>> { // eslint-disable-line @typescript-eslint/no-explicit-any
 		if (this.isReadStreamInProgress) {
 			throw new Error('Cannot run another query while one is still in progress. Possibly opened cursor.');
 		}
 
-		return await super.query(input, values);
+		return await super.query<T>(input, values);
 	}
 
 	public async streamQuery(input: QueryConfig | string, values?: readonly any[]): Promise<DatabaseReadStream> { // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -108,7 +108,7 @@ class Transaction<T> extends QueryableConnection implements Connection {
 		}
 	}
 
-	public insertStream<T extends Row>(tableName: string, options?: CollectorOptions): DatabaseInsertStream<T> {
+	public insertStream<T extends Row = Row>(tableName: string, options?: CollectorOptions): DatabaseInsertStream<T> {
 		const stream = super.insertStream<T>(tableName, options);
 
 		stream.once('finish', (): void => {

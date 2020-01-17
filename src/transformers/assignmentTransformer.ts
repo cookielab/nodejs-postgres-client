@@ -2,10 +2,10 @@ import {Row} from '../Row';
 import SQL, {SqlFragment} from 'pg-async/lib/sql';
 import sqlFragmentMapper from './sqlFragmentMapper';
 
-const assignmentTransformer = (row: Row): SqlFragment => {
+const assignmentTransformer = <T extends Row>(row: T): SqlFragment => {
 	return sqlFragmentMapper(
 		Object.keys(row),
-		(key: string) => SQL`$columnName${key} = ${row[key]}`,
+		(key: keyof T) => SQL`$columnName${key} = ${row[key]}`,
 		',\n'
 	);
 };

@@ -21,8 +21,8 @@ export default abstract class QueryableConnection implements AsyncConnection {
 		this.debug = options.debug === true;
 	}
 
-	public async findOne(input: QueryConfig | string, values?: readonly any[]): Promise<Row | null> { // eslint-disable-line @typescript-eslint/no-explicit-any
-		const result = await this.getRows(input, values);
+	public async findOne<T extends Row = Row>(input: QueryConfig | string, values?: readonly any[]): Promise<T | null> { // eslint-disable-line @typescript-eslint/no-explicit-any
+		const result = await this.getRows<T>(input, values);
 
 		if (result.length > 1) {
 			throw new OneRowExpectedError(result.length);
@@ -49,9 +49,9 @@ export default abstract class QueryableConnection implements AsyncConnection {
 		return result[0];
 	}
 
-	public async getOne(input: QueryConfig, error: {new(...parameters: readonly any[]): Error}): Promise<Row> { // eslint-disable-line @typescript-eslint/no-explicit-any
+	public async getOne<T extends Row = Row>(input: QueryConfig, error: {new(...parameters: readonly any[]): Error}): Promise<T> { // eslint-disable-line @typescript-eslint/no-explicit-any
 		try {
-			return await this.getRow(input);
+			return await this.getRow<T>(input);
 		} catch (e) {
 			if (e instanceof OneRowExpectedError) {
 				const values = input.values != null ? input.values : [];
@@ -62,19 +62,19 @@ export default abstract class QueryableConnection implements AsyncConnection {
 		}
 	}
 
-	public async insert(table: string, values: Row): Promise<QueryResult> {
+	public async insert<T extends Row = Row>(table: string, values: T): Promise<QueryResult<T>> {
 		return await this.query(SQL`
             INSERT INTO $identifier${table} $insert${values}
         `);
 	}
 
-	public async query(input: QueryConfig | string, values?: readonly any[]): Promise<QueryResult> { // eslint-disable-line @typescript-eslint/no-explicit-any
+	public async query<T extends Row = Row>(input: QueryConfig | string, values?: readonly any[]): Promise<QueryResult<T>> { // eslint-disable-line @typescript-eslint/no-explicit-any
 		const queryError = this.debug
 			? new QueryError(input, values) // capture stack trace
 			: null;
 
 		try {
-			return await this.connection.query(input, values?.slice());
+			return await this.connection.query<T>(input, values?.slice());
 		} catch (databaseError) {
 			if (queryError == null) {
 				throw databaseError;
@@ -86,8 +86,8 @@ export default abstract class QueryableConnection implements AsyncConnection {
 		}
 	}
 
-	public async getRow(input: QueryConfig | string, values?: readonly any[]): Promise<Row> { // eslint-disable-line @typescript-eslint/no-explicit-any
-		const result = await this.getRows(input, values);
+	public async getRow<T extends Row = Row>(input: QueryConfig | string, values?: readonly any[]): Promise<T> { // eslint-disable-line @typescript-eslint/no-explicit-any
+		const result = await this.getRows<T>(input, values);
 
 		if (result.length !== 1) {
 			throw new OneRowExpectedError(result.length);
@@ -96,8 +96,8 @@ export default abstract class QueryableConnection implements AsyncConnection {
 		return result[0];
 	}
 
-	public async getRows(input: QueryConfig | string, values?: readonly any[]): Promise<readonly Row[]> { // eslint-disable-line @typescript-eslint/no-explicit-any
-		const result = await this.query(input, values);
+	public async getRows<T extends Row = Row>(input: QueryConfig | string, values?: readonly any[]): Promise<readonly T[]> { // eslint-disable-line @typescript-eslint/no-explicit-any
+		const result = await this.query<T>(input, values);
 
 		return result.rows;
 	}
@@ -118,7 +118,7 @@ export default abstract class QueryableConnection implements AsyncConnection {
 		return result[0];
 	}
 
-	public insertStream<T extends Row>(tableName: string, options?: CollectorOptions): DatabaseInsertStream<T> {
+	public insertStream<T extends Row = Row>(tableName: string, options?: CollectorOptions): DatabaseInsertStream<T> {
 		const collector = new BatchInsertCollector<T>(this, tableName, options);
 
 		return new DatabaseInsertStream<T>(collector);

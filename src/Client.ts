@@ -59,7 +59,7 @@ class Client extends QueryableConnection implements Connection {
 		try {
 			await client.query('BEGIN');
 
-			const transaction = new Transaction(client, transactionCallback, {
+			const transaction = new Transaction<T>(client, transactionCallback, {
 				debug: this.debug,
 			});
 			const result = await transaction.perform();

@@ -4,10 +4,10 @@ import sqlFragmentMapper from './sqlFragmentMapper';
 type BaseType = string | number | boolean | Date | null;
 type RowValueType = BaseType | BaseType[];
 
-const valueListTransformer = (values: readonly RowValueType[]): SqlFragment => {
+const valueListTransformer = <T extends RowValueType>(values: readonly T[]): SqlFragment => {
 	return sqlFragmentMapper(
 		values,
-		(value: RowValueType) => SQL`${value}`,
+		(value: T) => SQL`${value}`,
 		', '
 	);
 };

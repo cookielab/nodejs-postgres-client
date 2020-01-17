@@ -2,13 +2,13 @@ import {Row} from '../Row';
 import SQL, {SqlFragment} from 'pg-async/lib/sql';
 import sqlFragmentMapper from './sqlFragmentMapper';
 
-const valuesTableTransformer = (rows: readonly Row[]): SqlFragment => {
-	const keys: readonly string[] = rows.length > 0 ? Object.keys(rows[0]) : [];
+const valuesTableTransformer = <T extends Row>(rows: readonly T[]): SqlFragment => {
+	const keys: ReadonlyArray<keyof T> = rows.length > 0 ? Object.keys(rows[0]) : [];
 
 	return sqlFragmentMapper(
 		rows,
-		(row: Row): SqlFragment => {
-			const data = keys.map((key: string) => row[key] ?? null);
+		(row: T): SqlFragment => {
+			const data = keys.map((key: keyof T) => row[key] ?? null);
 
 			return SQL`($values${data})`;
 		},
