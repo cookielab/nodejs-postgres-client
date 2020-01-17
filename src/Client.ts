@@ -64,7 +64,7 @@ class Client extends QueryableConnection implements Connection {
 			});
 			const result = await transaction.perform();
 
-			transaction.validateUnfinishedInsertStreams();
+			transaction.validateUnfinishedStreams();
 
 			await client.query('COMMIT');
 			client.release();

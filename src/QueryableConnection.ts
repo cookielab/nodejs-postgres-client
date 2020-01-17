@@ -2,7 +2,9 @@ import {AsyncConnection} from './Connection';
 import {Client, Pool, PoolClient, QueryConfig, QueryResult} from 'pg';
 import {Row} from './Row';
 import {SQL} from 'pg-async';
+import BatchDeleteCollector, {DeleteCollectorOptions, OneDatabaseValue} from './BatchDeleteCollector';
 import BatchInsertCollector, {InsertCollectorOptions} from './BatchInsertCollector';
+import DatabaseDeleteStream from './streams/DatabaseDeleteStream';
 import DatabaseInsertStream from './streams/DatabaseInsertStream';
 import OneRowExpectedError from './errors/OneRowExpectedError';
 import QueryError from './errors/QueryError';
@@ -122,5 +124,11 @@ export default abstract class QueryableConnection implements AsyncConnection {
 		const collector = new BatchInsertCollector<T>(this, tableName, options);
 
 		return new DatabaseInsertStream<T>(collector);
+	}
+
+	public deleteStream<T extends OneDatabaseValue>(tableName: string, options?: DeleteCollectorOptions): DatabaseDeleteStream<T> {
+		const collector = new BatchDeleteCollector<T>(this, tableName, options);
+
+		return new DatabaseDeleteStream<T>(collector);
 	}
 }

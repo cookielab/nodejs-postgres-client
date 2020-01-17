@@ -1,6 +1,8 @@
+import {DeleteCollectorOptions, OneDatabaseValue} from './BatchDeleteCollector';
 import {InsertCollectorOptions} from './BatchInsertCollector';
 import {QueryConfig, QueryResult} from 'pg';
 import {Row} from './Row';
+import DatabaseDeleteStream from './streams/DatabaseDeleteStream';
 import DatabaseInsertStream from './streams/DatabaseInsertStream';
 import DatabaseReadStream from './streams/DatabaseReadStream';
 
@@ -19,6 +21,7 @@ export interface AsyncConnection extends AsyncQueryable {
 	getColumn<T>(input: QueryConfig | string, values?: readonly any[], columnIndex?: number): Promise<readonly T[]>; // eslint-disable-line @typescript-eslint/no-explicit-any
 	getOneColumn<T>(input: QueryConfig | string, values?: readonly any[], columnIndex?: number): Promise<T>; // eslint-disable-line @typescript-eslint/no-explicit-any
 	insertStream<T extends Row = Row>(tableName: string, options?: InsertCollectorOptions): DatabaseInsertStream<T>;
+	deleteStream<T extends OneDatabaseValue>(tableName: string, options?: DeleteCollectorOptions): DatabaseDeleteStream<T>;
 }
 
 export interface Connection extends AsyncConnection {

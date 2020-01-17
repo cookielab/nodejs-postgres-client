@@ -1,8 +1,10 @@
 import {Client, PoolClient, QueryConfig, QueryResult} from 'pg';
 import {Connection} from './Connection';
+import {DeleteCollectorOptions, OneDatabaseValue} from './BatchDeleteCollector';
 import {InsertCollectorOptions} from './BatchInsertCollector';
 import {Lock} from 'semaphore-async-await';
 import {Row} from './Row';
+import DatabaseDeleteStream from './streams/DatabaseDeleteStream';
 import DatabaseInsertStream from './streams/DatabaseInsertStream';
 import DatabaseReadStream from './streams/DatabaseReadStream';
 import QueryableConnection from './QueryableConnection';
@@ -26,6 +28,7 @@ class Transaction<T> extends QueryableConnection implements Connection {
 	private savepointCounter: number;
 	private isReadStreamInProgress: boolean;
 	private insertStreamInProgressCount: number;
+	private deleteStreamInProgressCount: number;
 
 	public constructor(client: Client | PoolClient, transactionCallback: TransactionCallback<T>, options: TransactionOptions = OPTIONS_DEFAULT) {
 		super(client, options);
@@ -34,6 +37,7 @@ class Transaction<T> extends QueryableConnection implements Connection {
 		this.savepointCounter = options.savepointCounter != null ? options.savepointCounter : 0;
 		this.isReadStreamInProgress = false;
 		this.insertStreamInProgressCount = 0;
+		this.deleteStreamInProgressCount = 0;
 	}
 
 	public async perform(): Promise<T> {
@@ -54,7 +58,7 @@ class Transaction<T> extends QueryableConnection implements Connection {
 				});
 				const result = await transaction.perform();
 
-				transaction.validateUnfinishedInsertStreams();
+				transaction.validateUnfinishedStreams();
 
 				await this.query(`RELEASE SAVEPOINT ${savepointName}`);
 
@@ -102,9 +106,12 @@ class Transaction<T> extends QueryableConnection implements Connection {
 		return await Promise.resolve(stream);
 	}
 
-	public validateUnfinishedInsertStreams(): void {
+	public validateUnfinishedStreams(): void {
 		if (this.insertStreamInProgressCount > 0) {
 			throw new Error(`Cannot commit transaction (or release savepoint) because there is ${this.insertStreamInProgressCount} unfinished insert streams.`);
+		}
+		if (this.deleteStreamInProgressCount > 0) {
+			throw new Error(`Cannot commit transaction (or release savepoint) because there is ${this.deleteStreamInProgressCount} unfinished delete streams.`);
 		}
 	}
 
@@ -115,6 +122,17 @@ class Transaction<T> extends QueryableConnection implements Connection {
 			this.insertStreamInProgressCount--;
 		});
 		this.insertStreamInProgressCount++;
+
+		return stream;
+	}
+
+	public deleteStream<T extends OneDatabaseValue>(tableName: string, options?: DeleteCollectorOptions): DatabaseDeleteStream<T> {
+		const stream = super.deleteStream<T>(tableName, options);
+
+		stream.once('finish', (): void => {
+			this.deleteStreamInProgressCount--;
+		});
+		this.deleteStreamInProgressCount++;
 
 		return stream;
 	}
