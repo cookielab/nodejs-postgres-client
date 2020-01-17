@@ -56,8 +56,7 @@ export default abstract class QueryableConnection implements AsyncConnection {
 			return await this.getRow<T>(input);
 		} catch (e) {
 			if (e instanceof OneRowExpectedError) {
-				const values = input.values != null ? input.values : [];
-				throw new error(...values); // eslint-disable-line new-cap
+				throw new error(...(input?.values ?? [])); // eslint-disable-line new-cap
 			}
 
 			throw e;
