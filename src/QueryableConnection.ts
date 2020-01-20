@@ -119,15 +119,15 @@ export default abstract class QueryableConnection implements AsyncConnection {
 		return result[0];
 	}
 
-	public insertStream<T extends Row = Row>(tableName: string, options?: InsertCollectorOptions): DatabaseInsertStream<T> {
+	public async insertStream<T extends Row = Row>(tableName: string, options?: InsertCollectorOptions): Promise<DatabaseInsertStream<T>> {
 		const collector = new BatchInsertCollector<T>(this, tableName, options);
 
-		return new DatabaseInsertStream<T>(collector);
+		return await Promise.resolve(new DatabaseInsertStream<T>(collector));
 	}
 
-	public deleteStream<T extends OneDatabaseValue = string>(tableName: string, options?: DeleteCollectorOptions): DatabaseDeleteStream<T> {
+	public async deleteStream<T extends OneDatabaseValue = string>(tableName: string, options?: DeleteCollectorOptions): Promise<DatabaseDeleteStream<T>> {
 		const collector = new BatchDeleteCollector<T>(this, tableName, options);
 
-		return new DatabaseDeleteStream<T>(collector);
+		return await Promise.resolve(new DatabaseDeleteStream<T>(collector));
 	}
 }
