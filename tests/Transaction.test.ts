@@ -1,8 +1,7 @@
 import {Client, QueryConfig} from 'pg';
 import {DatabaseReadStream} from '../src';
+import {sleep} from './utils';
 import Transaction from '../src/Transaction';
-
-const sleep = (time: number): Promise<void> => new Promise((resolve: () => void) => setTimeout(resolve, time));
 
 describe('transaction', () => {
 	it('executes a nested transaction callback passing another transaction', async () => {
@@ -66,25 +65,25 @@ describe('transaction', () => {
 		});
 
 		const nestedTransactionCallback = jest.fn(async (): Promise<void> => {
-			await sleep(10);
+			await sleep(50);
 		});
 		const transactionCallback = async (connection: Transaction<void>): Promise<void> => {
 			await connection.transaction(nestedTransactionCallback);
 			await connection.query('SELECT 42 as theAnswer');
 			const queryStream = await connection.streamQuery('SELECT 42 as theAnswer');
-			setTimeout(() => queryStream.destroy(), 10);
+			setTimeout(() => queryStream.destroy(), 50);
 			const insertStream = await connection.insertStream('test_insert_stream_table');
-			setTimeout(() => insertStream.destroy(), 10);
+			setTimeout(() => insertStream.destroy(), 50);
 			const deleteStream = await connection.deleteStream('test_delete_stream_table');
-			setTimeout(() => deleteStream.destroy(), 10);
+			setTimeout(() => deleteStream.destroy(), 50);
 			await connection.transaction(nestedTransactionCallback);
 			await connection.query('SELECT 42 as theAnswer');
 			const queryStream2 = await connection.streamQuery('SELECT 42 as theAnswer');
-			setTimeout(() => queryStream2.destroy(), 10);
+			setTimeout(() => queryStream2.destroy(), 50);
 			const insertStream2 = await connection.insertStream('test_insert_stream_table');
-			setTimeout(() => insertStream2.destroy(), 10);
+			setTimeout(() => insertStream2.destroy(), 50);
 			const deleteStream2 = await connection.deleteStream('test_delete_stream_table');
-			setTimeout(() => deleteStream2.destroy(), 10);
+			setTimeout(() => deleteStream2.destroy(), 50);
 		};
 
 		await Transaction.createAndRun(client, transactionCallback);

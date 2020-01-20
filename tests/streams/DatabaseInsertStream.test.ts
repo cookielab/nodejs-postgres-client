@@ -1,6 +1,7 @@
 import {SQL} from 'pg-async';
 import {WritableStreamAsyncWriter} from '@cookielab.io/stream-async-wrappers';
 import {createPool} from '../bootstrap';
+import {sleep} from '../utils';
 import BatchInsertCollector from '../../src/BatchInsertCollector';
 import Client from '../../src/Client';
 import DatabaseInsertStream from '../../src/streams/DatabaseInsertStream';
@@ -17,8 +18,6 @@ SQL.registerTransform('columnNames', columnNamesTransformer);
 SQL.registerTransform('values', valueListTransformer);
 SQL.registerTransform('valuesTable', valuesTableTransformer);
 SQL.registerTransform('multiInsert', multiInsertTransformer);
-
-const sleep = (time: number): Promise<void> => new Promise((resolve: () => void) => setTimeout(resolve, time));
 
 describe('DatabaseInsertStream', () => {
 	const batchSize = 2;
@@ -49,7 +48,7 @@ describe('DatabaseInsertStream', () => {
 		for (let i = 0; i < 7; i++) {
 			await stream.write({id: i, name: 'Lorem Ipsum'});
 		}
-		await sleep(20);
+		await sleep(50);
 		expect(spyOnQuery).toHaveBeenCalledTimes(3);
 
 		await stream.end();

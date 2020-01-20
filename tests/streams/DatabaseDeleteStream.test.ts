@@ -1,6 +1,7 @@
 import {SQL} from 'pg-async';
 import {WritableStreamAsyncWriter} from '@cookielab.io/stream-async-wrappers';
 import {createPool} from '../bootstrap';
+import {sleep} from '../utils';
 import BatchDeleteCollector from '../../src/BatchDeleteCollector';
 import Client from '../../src/Client';
 import DatabaseDeleteStream from '../../src/streams/DatabaseDeleteStream';
@@ -9,8 +10,6 @@ import valueListTransformer from '../../src/transformers/valueListTransformer';
 const TABLE_NAME = 'test_database_delete_stream';
 
 SQL.registerTransform('values', valueListTransformer);
-
-const sleep = (time: number): Promise<void> => new Promise((resolve: () => void) => setTimeout(resolve, time));
 
 describe('DatabaseDeleteStream', () => {
 	const batchSize = 2;
@@ -47,7 +46,7 @@ describe('DatabaseDeleteStream', () => {
 		for (let i = 0; i < 7; i++) {
 			await stream.write(i);
 		}
-		await sleep(20);
+		await sleep(50);
 		expect(spyOnQuery).toHaveBeenCalledTimes(3);
 
 		await stream.end();

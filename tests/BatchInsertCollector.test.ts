@@ -1,10 +1,9 @@
 import {AsyncQueryable} from '../src/Connection';
 import {BatchInsertCollector} from '../src';
 import {QueryConfig} from 'pg';
+import {sleep} from './utils';
 
 const createItem = (id: number): {readonly id: number} => ({id});
-
-const sleep = (time: number): Promise<void> => new Promise((resolve: () => void) => setTimeout(resolve, time));
 
 describe('BatchInsertCollector', () => {
 	let insertedValues: Set<unknown> = new Set();
@@ -79,13 +78,12 @@ describe('BatchInsertCollector', () => {
 		collector.add(createItem(2));
 		collector.add(createItem(3));
 		collector.add(createItem(4));
-		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(0);
-		await sleep(10);
+		await sleep(50);
 		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(2);
 
 		collector.add(createItem(5));
 		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(2);
-		await sleep(10);
+		await sleep(50);
 		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(2);
 
 		await collector.flush();

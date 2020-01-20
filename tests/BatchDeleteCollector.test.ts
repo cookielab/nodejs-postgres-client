@@ -1,8 +1,7 @@
 import {AsyncQueryable} from '../src/Connection';
 import {BatchDeleteCollector} from '../src';
 import {QueryConfig} from 'pg';
-
-const sleep = (time: number): Promise<void> => new Promise((resolve: () => void) => setTimeout(resolve, time));
+import {sleep} from './utils';
 
 describe('BatchDeleteCollector', () => {
 	let deletedValues: Set<unknown> = new Set();
@@ -77,13 +76,12 @@ describe('BatchDeleteCollector', () => {
 		collector.add(2);
 		collector.add(3);
 		collector.add(4);
-		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(0);
-		await sleep(10);
+		await sleep(50);
 		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(2);
 
 		collector.add(5);
 		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(2);
-		await sleep(10);
+		await sleep(50);
 		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(2);
 
 		await collector.flush();
