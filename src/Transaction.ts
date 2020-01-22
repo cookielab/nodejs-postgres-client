@@ -8,6 +8,7 @@ import {Stream} from 'stream';
 import DatabaseDeleteStream from './streams/DatabaseDeleteStream';
 import DatabaseInsertStream from './streams/DatabaseInsertStream';
 import DatabaseReadStream from './streams/DatabaseReadStream';
+import QueryError from './errors/QueryError';
 import QueryableConnection from './QueryableConnection';
 
 export type TransactionCallback<T> = (connection: Transaction<T>) => Promise<T> | T;
@@ -67,9 +68,21 @@ class Transaction<T> extends QueryableConnection implements Connection {
 	}
 
 	public async query<T extends Row = Row>(input: QueryConfig | string, values?: readonly any[]): Promise<QueryResult<T>> { // eslint-disable-line @typescript-eslint/no-explicit-any
+		const queryError = this.debug
+			? new QueryError(input, values) // capture stack trace
+			: null;
+
 		await this.lock.acquire();
 		try {
 			return await super.query<T>(input, values);
+		} catch (databaseError) {
+			if (queryError == null) {
+				throw databaseError;
+			}
+
+			queryError.message = databaseError.message;
+			queryError.causedBy = databaseError instanceof QueryError ? databaseError.causedBy : databaseError;
+			throw queryError;
 		} finally {
 			this.lock.release();
 		}
