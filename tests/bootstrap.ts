@@ -1,9 +1,7 @@
 import {Pool, PoolConfig} from 'pg';
 
 const variable = (name: string, defaultValue: string): string => {
-	const value = process.env[name]; // eslint-disable-line no-process-env
-
-	return value != null ? value : defaultValue;
+	return process.env[name] ?? defaultValue; // eslint-disable-line no-process-env
 };
 
 const connectionConfig: PoolConfig = {
