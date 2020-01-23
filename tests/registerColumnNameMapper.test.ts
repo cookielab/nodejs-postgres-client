@@ -18,6 +18,6 @@ describe('registerColumnNameMapper', () => {
 
 		const fragmentAfter = SQL`$columnName${columnName}`;
 		expect(fragmentAfter.text.trim()).toBe('"lorem_ipsum"');
-		expect(fragmentBefore.values).toEqual([]);
+		expect(fragmentAfter.values).toEqual([]);
 	});
 });
