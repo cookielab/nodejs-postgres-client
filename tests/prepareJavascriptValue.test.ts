@@ -2,7 +2,7 @@ import prepareJavascriptValue from '../src/prepareJavascriptValue';
 
 describe('prepareJavascriptValue', () => {
 	it('calls the original prepareValue function when there are no custom types', () => {
-		const value: unknown[] = [];
+		const value: readonly unknown[] = [];
 
 		const originalPrepareValueMock = jest.fn();
 
@@ -17,7 +17,7 @@ describe('prepareJavascriptValue', () => {
 	});
 
 	it('calls the original prepareValue function when no custom type matches the value', () => {
-		const value: unknown[] = [];
+		const value: readonly unknown[] = [];
 
 		const originalPrepareValueMock = jest.fn();
 		const match = jest.fn(() => false);
@@ -40,7 +40,7 @@ describe('prepareJavascriptValue', () => {
 	});
 
 	it('calls a custom type converter if the type matches the value', () => {
-		const value: unknown[] = [];
+		const value: readonly unknown[] = [];
 		const returnValue: string = '';
 
 		const originalPrepareValueMock = jest.fn();
@@ -91,7 +91,7 @@ describe('prepareJavascriptValue', () => {
 				{match, convert},
 				{match, convert},
 			],
-			{foo: 'bar'},
+			{foo: 'bar'} as const,
 		)).toThrow('There are more than one value converters for "{"foo":"bar"}".');
 	});
 });
