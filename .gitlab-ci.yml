@@ -19,11 +19,6 @@ stages:
     paths:
       - node_modules
 
-'yarn 8/12':
-  <<: *yarn_definition
-  variables:
-    NODE_VERSION: 8
-
 'yarn 10/12':
   <<: *yarn_definition
   variables:
@@ -41,13 +36,6 @@ stages:
     - docker
   script:
     - bin/lint
-
-'lint 8/12':
-  <<: *lint_definition
-  dependencies:
-    - 'yarn 8/12'
-  variables:
-    NODE_VERSION: 8
 
 'lint 10/12':
   <<: *lint_definition
@@ -70,13 +58,6 @@ stages:
     - docker
   script:
     - bin/typescript
-
-'typescript 8/12':
-  <<: *typescript_definition
-  dependencies:
-    - 'yarn 8/12'
-  variables:
-    NODE_VERSION: 8
 
 'typescript 10/12':
   <<: *typescript_definition
@@ -106,19 +87,6 @@ stages:
     reports:
       junit: junit.xml
 
-'test 8/12':
-  <<: *test_definition
-  dependencies:
-    - 'yarn 8/12'
-  variables:
-    NODE_VERSION: 8
-    POSTGRES_PASSWORD: toor
-    POSTGRES_DB: postgres_client
-    DATABASE_HOST: postgres
-    DATABASE_USER: postgres
-    DATABASE_PASSWORD: toor
-    DATABASE_NAME: postgres_client
-
 'test 10/12':
   <<: *test_definition
   dependencies:
@@ -146,7 +114,7 @@ stages:
     DATABASE_NAME: postgres_client
 
 publish:
-  image: cookielab/nodejs:10
+  image: cookielab/nodejs:12
   stage: publish
   tags:
     - docker
