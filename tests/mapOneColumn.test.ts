@@ -4,15 +4,18 @@ import mapOneColumn from '../src/mapOneColumn';
 
 describe('mapOneColumn', () => {
 	it('returns values of requested column index', () => {
-		const queryRows: Row[] = [{
-			id: 42,
-			name: 'row 42',
-			date: 'now',
-		}, {
-			id: 666,
-			name: 'row 666',
-			date: 'now',
-		}];
+		const queryRows: readonly Row[] = [
+			{
+				id: 42,
+				name: 'row 42',
+				date: 'now',
+			},
+			{
+				id: 666,
+				name: 'row 666',
+				date: 'now',
+			},
+		];
 
 		const result = mapOneColumn<string, Row>(queryRows, 1);
 
@@ -20,7 +23,7 @@ describe('mapOneColumn', () => {
 	});
 
 	it('returns empty array when no values are present in rows', () => {
-		const queryRows: Row[] = [];
+		const queryRows: readonly Row[] = [];
 
 		const result = mapOneColumn<number, Row>(queryRows, 0);
 
@@ -28,16 +31,22 @@ describe('mapOneColumn', () => {
 	});
 
 	it('throws error when non existent column index requested', () => {
-		const queryRows: Row[] = [{
-			id: 42,
-			name: 'row 42',
-			date: 'now',
-		}, {
-			id: 666,
-			name: 'row 666',
-			date: 'now',
-		}];
+		const queryRows: readonly Row[] = [
+			{
+				id: 42,
+				name: 'row 42',
+				date: 'now',
+			},
+			{
+				id: 666,
+				name: 'row 666',
+				date: 'now',
+			},
+			{},
+		];
 
-		expect(() => mapOneColumn<string, Row>(queryRows, 3)).toThrow(new NonExistentColumnIndexError(3, 2));
+		expect(() => {
+			mapOneColumn<string, Row>(queryRows, 0);
+		}).toThrow(new NonExistentColumnIndexError(0, -1));
 	});
 });

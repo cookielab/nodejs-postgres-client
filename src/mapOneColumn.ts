@@ -2,7 +2,7 @@ import {Row} from './Row';
 import NonExistentColumnIndexError from './errors/NonExistentColumnIndexError';
 
 const mapOneColumn = <T, R extends Row>(rows: readonly R[], requestedColumnIndex: number): readonly T[] => {
-	return rows.map((row: R) => {
+	return rows.map((row: R): T => {
 		const rowValues = Object.values(row);
 		const maximumAvailableIndex = rowValues.length - 1;
 
