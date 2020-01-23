@@ -15,10 +15,9 @@ describe('column names transformer', () => {
 		expect(result.values).toEqual([]);
 	});
 
-	it('does nothing for empty column names', () => {
-		const result = columnNamesTransformer([]);
-
-		expect(result.text.trim()).toBe('');
-		expect(result.values).toEqual([]);
+	it('fails for empty list of column names', () => {
+		expect(() => {
+			columnNamesTransformer([]);
+		}).toThrow(new Error('Cannot create list of column names from empty array.'));
 	});
 });

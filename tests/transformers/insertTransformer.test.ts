@@ -21,4 +21,10 @@ describe('insert transformer', () => {
 			'id1', 'name1', 1,
 		]);
 	});
+
+	it('fails for empty object', () => {
+		expect(() => {
+			insertTransformer({});
+		}).toThrow(new Error('Cannot format insert for rows of empty objects.'));
+	});
 });

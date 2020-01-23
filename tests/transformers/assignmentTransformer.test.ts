@@ -18,10 +18,9 @@ describe('assignment transformer', () => {
 		]);
 	});
 
-	it('does nothing for empty object', () => {
-		const result = assignmentTransformer({});
-
-		expect(result.text.trim()).toBe('');
-		expect(result.values).toEqual([]);
+	it('fails for empty object', () => {
+		expect(() => {
+			assignmentTransformer({});
+		}).toThrow(new Error('Cannot create list of assignments from empty object.'));
 	});
 });

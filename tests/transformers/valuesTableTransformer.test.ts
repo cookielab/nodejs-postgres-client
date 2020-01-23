@@ -60,9 +60,10 @@ describe('values table transformer', () => {
 		const sql = valuesTableTransformer([
 			{id: 'id1', name: 'name1', integer: 1, extra: 'bar'},
 			{id: 'id2', name: 'name2', integer: 2},
+			{},
 		]);
 
-		expect(sql.text.trim()).toBe('($1, $2, $3, $4),\n($5, $6, $7, $8)');
+		expect(sql.text.trim()).toBe('($1, $2, $3, $4),\n($5, $6, $7, $8),\n($9, $10, $11, $12)');
 		expect(sql.values).toEqual([
 			'id1',
 			'name1',
@@ -72,13 +73,25 @@ describe('values table transformer', () => {
 			'name2',
 			2,
 			null,
+			null,
+			null,
+			null,
+			null,
 		]);
 	});
 
-	it('prepares values table for empty rows', () => {
-		const sql = valuesTableTransformer([]);
+	it('fails for empty rows', () => {
+		expect(() => {
+			valuesTableTransformer([]);
+		}).toThrow(new Error('Cannot format values table for no rows.'));
+	});
 
-		expect(sql.text.trim()).toBe('');
-		expect(sql.values).toEqual([]);
+	it('fails for list of rows with empty object as the first row', () => {
+		expect(() => {
+			valuesTableTransformer([
+				{},
+				{id: 'id1', name: 'name1', integer: 1},
+			]);
+		}).toThrow(new Error('Cannot format values table for rows of empty objects.'));
 	});
 });

@@ -6,6 +6,9 @@ const multiInsertTransformer = <T extends Row>(rows: readonly T[]): SqlFragment 
 		throw new Error('Cannot format multi insert for no rows.');
 	}
 	const columnNames: ReadonlyArray<keyof T> = Object.keys(rows[0]);
+	if (columnNames.length < 1) {
+		throw new Error('Cannot format insert for rows of empty objects.');
+	}
 
 	return SQL`($columnNames${columnNames}) VALUES $valuesTable${rows}`;
 };

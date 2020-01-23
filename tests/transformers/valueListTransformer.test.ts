@@ -2,24 +2,26 @@ import valueListTransformer from '../../src/transformers/valueListTransformer';
 
 describe('value list transformer', () => {
 	it('joins values', () => {
+		const now = new Date();
 		const sql = valueListTransformer([
 			'string',
 			123,
 			true,
+			now,
 		]);
 
-		expect(sql.text.trim()).toBe('$1, $2, $3');
+		expect(sql.text.trim()).toBe('$1, $2, $3, $4');
 		expect(sql.values).toEqual([
 			'string',
 			123,
 			true,
+			now,
 		]);
 	});
 
-	it('does nothing for empty values', () => {
-		const sql = valueListTransformer([]);
-
-		expect(sql.text.trim()).toBe('');
-		expect(sql.values).toEqual([]);
+	it('fails for empty values', () => {
+		expect(() => {
+			valueListTransformer([]);
+		}).toThrow(new Error('Cannot create list of values from empty array.'));
 	});
 });
