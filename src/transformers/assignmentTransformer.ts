@@ -4,7 +4,7 @@ import sqlFragmentMapper from './sqlFragmentMapper';
 
 const assignmentTransformer = <T extends Row>(row: T): SqlFragment => {
 	return sqlFragmentMapper(
-		Object.keys(row),
+		Object.keys(row) as ReadonlyArray<keyof T>,
 		(key: keyof T) => SQL`$columnName${key} = ${row[key]}`,
 		',\n'
 	);
