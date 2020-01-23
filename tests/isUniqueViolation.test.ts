@@ -3,7 +3,7 @@ import isUniqueViolation from '../src/isUniqueViolation';
 
 describe('isUniqueViolation', () => {
 	it('returns false for an error without code', () => {
-		const error: {code?: string} & Error = new Error();
+		const error = new Error();
 
 		const result = isUniqueViolation(error);
 		expect(result).toBe(false);
@@ -26,7 +26,7 @@ describe('isUniqueViolation', () => {
 	});
 
 	it('returns false for an error without code in QueryError', () => {
-		const error: {code?: string} & Error = new Error();
+		const error = new Error();
 
 		const queryError = new QueryError('', []);
 		queryError.causedBy = error;
@@ -58,7 +58,7 @@ describe('isUniqueViolation', () => {
 	});
 
 	it('returns false for a QueryError without caused by error without code', () => {
-		const queryError: {code?: string} & Error = new QueryError({text: '', values: []});
+		const queryError = new QueryError({text: '', values: []});
 
 		const result = isUniqueViolation(queryError);
 		expect(result).toBe(false);
