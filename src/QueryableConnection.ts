@@ -63,8 +63,8 @@ export default abstract class QueryableConnection implements AsyncConnection {
 		}
 	}
 
-	public async insert<T extends Row = Row>(table: string, values: T): Promise<QueryResult<T>> {
-		return await this.query(SQL`
+	public async insert<T extends Row = Row>(table: string, values: T): Promise<void> {
+		await this.query(SQL`
             INSERT INTO $identifier${table} $insert${values}
         `);
 	}
