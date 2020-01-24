@@ -5,9 +5,10 @@ import Client from '../src/Client';
 
 const expectUltimateResult = (result: QueryResult): void => {
 	expect(result.rowCount).toBe(1);
+	expect(result.rows).toHaveLength(1);
 
 	const row = result.rows[0];
-	expect(row.answer).toBe(42);
+	expect(row).toHaveProperty('answer', 42);
 };
 
 describe('Client.query', () => {
@@ -25,7 +26,7 @@ describe('Client.query', () => {
 	it('returns result for a simple query with values', async () => {
 		const result = await client.query('SELECT 42 AS answer WHERE 1=$1', [1]);
 
-		expect(result.rowCount).toBe(1);
+		expectUltimateResult(result);
 	});
 
 	it('returns result for a query configuration object', async () => {

@@ -67,7 +67,6 @@ describe('Client.constructor', () => {
 			pgUtils.prepareValue(null);
 			expect(prepareValueMock).toHaveBeenCalledTimes(1);
 
-			prepareValueMock.mockReset();
 			prepareValueMock.mockRestore();
 		});
 
