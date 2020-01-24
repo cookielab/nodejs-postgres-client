@@ -4,6 +4,27 @@ import {sleep} from './utils';
 import Transaction from '../src/Transaction';
 
 describe('Transaction', () => {
+	it('executes the given callback', async () => {
+		const client: jest.Mocked<Client> = new (jest.fn())();
+		client.query = jest.fn();
+
+		const transactionCallback = jest.fn(async (connection: Connection): Promise<void> => {
+			expect(connection).toBeInstanceOf(Transaction);
+			await connection.query('TEST');
+		});
+
+		await Transaction.createAndRun(client, transactionCallback);
+
+		expect(transactionCallback).toHaveBeenCalledTimes(1);
+		// @ts-ignore allow constructor usage in tests
+		expect(transactionCallback).toHaveBeenCalledWith(new Transaction(client, {
+			savepointCounter: 1,
+		}));
+
+		expect(client.query).toHaveBeenCalledTimes(1);
+		expect(client.query).toHaveBeenNthCalledWith(1, 'TEST', undefined);
+	});
+
 	it('executes a nested transaction callback passing another transaction', async () => {
 		const client: jest.Mocked<Client> = new (jest.fn())();
 		client.query = jest.fn();
