@@ -33,7 +33,7 @@ describe('Client.streamQuery', () => {
 		// Obtains a client from the pool
 		expect(pool.connect).toHaveBeenCalledTimes(1);
 
-		// Performs no queries
+		// Performs a query to register the stream to the client
 		expect(databaseClient.query).toHaveBeenCalledTimes(1);
 
 		// Client not release yet
@@ -67,7 +67,7 @@ describe('Client.streamQuery', () => {
 		// Obtains a client from the pool
 		expect(pool.connect).toHaveBeenCalledTimes(1);
 
-		// Performs no queries
+		// Performs a query to register the stream to the client
 		expect(databaseClient.query).toHaveBeenCalledTimes(1);
 
 		// Releases client
@@ -91,7 +91,7 @@ describe('Client.streamQuery', () => {
 		// Obtains a client from the pool
 		expect(pool.connect).toHaveBeenCalledTimes(1);
 
-		// Performs no queries
+		// Performs a query to register the stream to the client
 		expect(databaseClient.query).toHaveBeenCalledTimes(1);
 
 		// Client not release yet
