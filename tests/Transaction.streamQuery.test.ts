@@ -32,7 +32,6 @@ describe('Transaction.streamQuery', () => {
 				throw new Error('TEST');
 			});
 
-		// TODO - the transaction should fail
 		await Transaction.createAndRun(databaseClient, async (connection: Connection) => {
 			expect(connection).toBeInstanceOf(Transaction);
 			await expect(connection.streamQuery(''))
@@ -47,7 +46,6 @@ describe('Transaction.streamQuery', () => {
 	it('releases the client with error for an error event on the stream', async () => {
 		const databaseClient = createDatabaseClientMock();
 
-		// TODO - the transaction should fail
 		await Transaction.createAndRun(databaseClient, async (connection: Connection) => {
 			expect(connection).toBeInstanceOf(Transaction);
 			const stream = await connection.streamQuery('');
@@ -58,7 +56,6 @@ describe('Transaction.streamQuery', () => {
 			}, 50);
 		});
 
-		// Performs no queries
 		expect(databaseClient.query).toHaveBeenCalledTimes(1);
 	});
 });
