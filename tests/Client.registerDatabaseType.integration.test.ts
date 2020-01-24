@@ -2,7 +2,7 @@ import {createPool} from './bootstrap';
 import Client from '../src/Client';
 import TypeNotFoundError from '../src/errors/TypeNotFoundError';
 
-describe('query database integration', () => {
+describe('Client.registerDatabaseType', () => {
 	let client: Client = new Client(createPool());
 	beforeEach(() => {
 		client = new Client(createPool());

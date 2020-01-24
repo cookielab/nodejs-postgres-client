@@ -2,7 +2,7 @@ import Client from '../src/Client';
 import DatabaseInsertStream from '../src/streams/DatabaseInsertStream';
 import QueryableConnection from '../src/QueryableConnection';
 
-describe('insertStream', () => {
+describe('QueryableConnection.insertStream', () => {
 	let connection: QueryableConnection | null = null;
 	let originalQuerySpy: jest.SpyInstance | null = null;
 	beforeEach(() => {

@@ -2,7 +2,7 @@ import {Row, SQL} from '../src';
 import Client from '../src/Client';
 import NonExistentColumnIndexError from '../src/errors/NonExistentColumnIndexError';
 
-describe('getColumn', () => {
+describe('QueryableConnection.getColumn', () => {
 	it('returns values of column with index 0 when column index not supplied', async () => {
 		const resultRows: Row[] = [
 			{

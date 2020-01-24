@@ -20,7 +20,7 @@ const createPoolMock = (databaseClient: PoolClient): jest.Mocked<Pool> => {
 	return pool;
 };
 
-describe('client', () => {
+describe('Client.transaction', () => {
 	it('begins and commits a successful transaction', async () => {
 		const databaseClient = createDatabaseClientMock();
 		const pool = createPoolMock(databaseClient);

@@ -4,7 +4,7 @@ import {createPool} from './bootstrap';
 import Client from '../src/Client';
 import Transaction from '../src/Transaction';
 
-describe('client database integration', () => {
+describe('Client.transaction', () => {
 	const client: Client = new Client(createPool());
 	afterAll(async () => {
 		await client.end();

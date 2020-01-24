@@ -3,7 +3,7 @@ import Client from '../src/Client';
 import NonExistentColumnIndexError from '../src/errors/NonExistentColumnIndexError';
 import OneRowExpectedError from '../src/errors/OneRowExpectedError';
 
-describe('findOneColumn', () => {
+describe('QueryableConnection.findOneColumn', () => {
 	it('returns value of column with index 0 when column index not supplied and row is found', async () => {
 		const resultRows: Row[] = [{
 			id: 42,

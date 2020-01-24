@@ -1,7 +1,7 @@
 import {Row} from '../src';
 import Client from '../src/Client';
 
-describe('getRows', () => {
+describe('QueryableConnection.getRows', () => {
 	it('returns only the result rows', async () => {
 		const resultRows: Row[] = [];
 		const connection = new Client(jest.fn() as any); // eslint-disable-line @typescript-eslint/no-explicit-any

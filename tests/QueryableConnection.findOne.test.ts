@@ -2,7 +2,7 @@ import {Row} from '../src';
 import Client from '../src/Client';
 import OneRowExpectedError from '../src/errors/OneRowExpectedError';
 
-describe('findOne', () => {
+describe('QueryableConnection.findOne', () => {
 	it('returns a row when found', async () => {
 		const row: Row = {};
 		const connection = new Client(jest.fn() as any); // eslint-disable-line @typescript-eslint/no-explicit-any

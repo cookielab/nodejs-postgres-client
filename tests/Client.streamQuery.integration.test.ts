@@ -3,7 +3,7 @@ import {createPool} from './bootstrap';
 import Client from '../src/Client';
 import DatabaseReadStream from '../src/streams/DatabaseReadStream';
 
-describe('client database integration', () => {
+describe('Client.streamQuery', () => {
 	const client: Client = new Client(createPool());
 	afterAll(async () => {
 		await client.end();

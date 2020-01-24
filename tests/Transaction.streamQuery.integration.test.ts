@@ -4,7 +4,7 @@ import Client from '../src/Client';
 import DatabaseReadStream from '../src/streams/DatabaseReadStream';
 import Transaction from '../src/Transaction';
 
-describe('transaction database integration', () => {
+describe('Transaction.streamQuery', () => {
 	const client: Client = new Client(createPool());
 	afterAll(async () => {
 		await client.end();

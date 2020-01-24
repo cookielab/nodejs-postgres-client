@@ -1,6 +1,6 @@
 import Client from '../src/Client';
 
-describe('insert', () => {
+describe('QueryableConnection.insert', () => {
 	it('converts table name and the values', async () => {
 		const connection = new Client(jest.fn() as any); // eslint-disable-line @typescript-eslint/no-explicit-any
 		const queryMock = jest.spyOn(connection, 'query')

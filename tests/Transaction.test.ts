@@ -3,7 +3,7 @@ import {DatabaseReadStream} from '../src';
 import {sleep} from './utils';
 import Transaction from '../src/Transaction';
 
-describe('transaction', () => {
+describe('Transaction', () => {
 	it('executes a nested transaction callback passing another transaction', async () => {
 		const client: jest.Mocked<Client> = new (jest.fn())();
 		client.query = jest.fn();

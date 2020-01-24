@@ -7,7 +7,7 @@ import pgUtils from 'pg/lib/utils';
 
 SQL.registerTransform('columnName', columnNameTransformer);
 
-describe('constructor', () => {
+describe('Client.constructor', () => {
 	const pool = createPool();
 	afterAll(async () => {
 		await pool.end();

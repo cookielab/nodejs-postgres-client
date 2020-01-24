@@ -13,7 +13,7 @@ class CustomNotFoundError extends Error {
 class UnexpectedError extends Error {
 }
 
-describe('getOne', () => {
+describe('QueryableConnection.getOne', () => {
 	it('returns a row when found', async () => {
 		const row: Row = {};
 		const connection = new Client(jest.fn() as any); // eslint-disable-line @typescript-eslint/no-explicit-any

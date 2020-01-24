@@ -10,7 +10,7 @@ const expectUltimateResult = (result: QueryResult): void => {
 	expect(row.answer).toBe(42);
 };
 
-describe('query database integration', () => {
+describe('Client.query', () => {
 	const client: Client = new Client(createPool());
 	afterAll(async () => {
 		await client.end();

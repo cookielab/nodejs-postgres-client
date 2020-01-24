@@ -1,7 +1,7 @@
 import Client from '../src/Client';
 import QueryableConnection from '../src/QueryableConnection';
 
-describe('query', () => {
+describe('QueryableConnection.query', () => {
 	let connection: QueryableConnection | null = null;
 	let originalQuerySpy: jest.SpyInstance | null = null;
 	beforeEach(() => {

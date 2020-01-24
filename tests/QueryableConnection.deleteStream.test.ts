@@ -2,7 +2,7 @@ import Client from '../src/Client';
 import DatabaseDeleteStream from '../src/streams/DatabaseDeleteStream';
 import QueryableConnection from '../src/QueryableConnection';
 
-describe('deleteStream', () => {
+describe('QueryableConnection.deleteStream', () => {
 	let connection: QueryableConnection | null = null;
 	let originalQuerySpy: jest.SpyInstance | null = null;
 	beforeEach(() => {
