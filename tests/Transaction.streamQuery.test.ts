@@ -15,8 +15,9 @@ describe('Transaction.streamQuery', () => {
 	it('runs query stream exclusively in the transaction', async () => {
 		const databaseClient = createDatabaseClientMock();
 
-		await Transaction.createAndRun(databaseClient, async (transaction: Connection) => {
-			const stream = await transaction.streamQuery('');
+		await Transaction.createAndRun(databaseClient, async (connection: Connection) => {
+			expect(connection).toBeInstanceOf(Transaction);
+			const stream = await connection.streamQuery('');
 			expect(stream).toBeInstanceOf(DatabaseReadStream);
 			stream.destroy();
 		});
@@ -32,8 +33,9 @@ describe('Transaction.streamQuery', () => {
 			});
 
 		// TODO - the transaction should fail
-		await Transaction.createAndRun(databaseClient, async (transaction: Connection) => {
-			await expect(transaction.streamQuery(''))
+		await Transaction.createAndRun(databaseClient, async (connection: Connection) => {
+			expect(connection).toBeInstanceOf(Transaction);
+			await expect(connection.streamQuery(''))
 				.rejects.toEqual(new Error('TEST'));
 		});
 
@@ -46,8 +48,9 @@ describe('Transaction.streamQuery', () => {
 		const databaseClient = createDatabaseClientMock();
 
 		// TODO - the transaction should fail
-		await Transaction.createAndRun(databaseClient, async (transaction: Connection) => {
-			const stream = await transaction.streamQuery('');
+		await Transaction.createAndRun(databaseClient, async (connection: Connection) => {
+			expect(connection).toBeInstanceOf(Transaction);
+			const stream = await connection.streamQuery('');
 			expect(stream).toBeInstanceOf(DatabaseReadStream);
 
 			setTimeout(() => {

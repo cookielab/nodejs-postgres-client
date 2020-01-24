@@ -2,6 +2,7 @@ import {Connection} from '../src';
 import {createPool} from './bootstrap';
 import Client from '../src/Client';
 import QueryError from '../src/errors/QueryError';
+import Transaction from '../src/Transaction';
 
 describe('QueryableConnection.debug', () => {
 	describe('invalid query in production mode', () => {
@@ -52,6 +53,8 @@ describe('QueryableConnection.debug', () => {
 
 		it('should throw custom error with full stack trace within transaction', async () => {
 			const promise = client.transaction(async (connection: Connection) => {
+				expect(connection).toBeInstanceOf(Transaction);
+
 				return await connection.query('SELECT foo');
 			});
 

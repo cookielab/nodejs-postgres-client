@@ -1,6 +1,7 @@
 import {Connection} from '../src';
 import {Pool, PoolClient} from 'pg';
 import Client from '../src/Client';
+import Transaction from '../src/Transaction';
 
 const createDatabaseClientMock = (): jest.Mocked<PoolClient> => {
 	const databaseClient: jest.Mocked<PoolClient> = new (jest.fn())();
@@ -24,6 +25,7 @@ describe('Client.transaction', () => {
 		const databaseClient = createDatabaseClientMock();
 		const pool = createPoolMock(databaseClient);
 		const transactionCallback = async (connection: Connection): Promise<number> => {
+			expect(connection).toBeInstanceOf(Transaction);
 			await connection.query('SELECT 42');
 
 			return 42;
@@ -53,6 +55,7 @@ describe('Client.transaction', () => {
 		const databaseClient = createDatabaseClientMock();
 		const pool = createPoolMock(databaseClient);
 		const transactionCallback = async (connection: Connection): Promise<void> => {
+			expect(connection).toBeInstanceOf(Transaction);
 			await connection.query('SELECT 42');
 			await Promise.reject(new Error('You shall not pass!'));
 			await connection.query('SELECT 43');
@@ -82,12 +85,14 @@ describe('Client.transaction', () => {
 		const databaseClient = createDatabaseClientMock();
 		const pool = createPoolMock(databaseClient);
 		const nestedTransactionCallback = jest.fn((connection: Connection): void => {
+			expect(connection).toBeInstanceOf(Transaction);
 			// @ts-ignore The property is protected
 			expect(connection.connection).toBe(databaseClient);
 		});
 
 		const client = new Client(pool);
 		await client.transaction(async (connection: Connection): Promise<void> => {
+			expect(connection).toBeInstanceOf(Transaction);
 			await connection.transaction(nestedTransactionCallback);
 		});
 

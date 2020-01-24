@@ -1,5 +1,5 @@
 import {Client, QueryConfig} from 'pg';
-import {DatabaseReadStream} from '../src';
+import {Connection, DatabaseReadStream} from '../src';
 import {sleep} from './utils';
 import Transaction from '../src/Transaction';
 
@@ -9,7 +9,8 @@ describe('Transaction', () => {
 		client.query = jest.fn();
 
 		const nestedTransactionCallback = jest.fn();
-		const transactionCallback = async (connection: Transaction<void>): Promise<void> => {
+		const transactionCallback = async (connection: Connection): Promise<void> => {
+			expect(connection).toBeInstanceOf(Transaction);
 			await connection.transaction(nestedTransactionCallback);
 		};
 
@@ -30,10 +31,12 @@ describe('Transaction', () => {
 		const client: jest.Mocked<Client> = new (jest.fn())();
 		client.query = jest.fn();
 
-		const nestedTransactionCallback = jest.fn(() => {
+		const nestedTransactionCallback = jest.fn((connection: Connection) => {
+			expect(connection).toBeInstanceOf(Transaction);
 			throw new Error('Failing transaction');
 		});
-		const transactionCallback = async (connection: Transaction<void>): Promise<void> => {
+		const transactionCallback = async (connection: Connection): Promise<void> => {
+			expect(connection).toBeInstanceOf(Transaction);
 			await connection.transaction(nestedTransactionCallback);
 		};
 
@@ -64,10 +67,13 @@ describe('Transaction', () => {
 			return Promise.resolve();
 		});
 
-		const nestedTransactionCallback = jest.fn(async (): Promise<void> => {
+		const nestedTransactionCallback = jest.fn(async (connection: Connection): Promise<void> => {
+			expect(connection).toBeInstanceOf(Transaction);
 			await sleep(50);
 		});
-		const transactionCallback = async (connection: Transaction<void>): Promise<void> => {
+		const transactionCallback = async (connection: Connection): Promise<void> => {
+			expect(connection).toBeInstanceOf(Transaction);
+
 			await connection.transaction(nestedTransactionCallback);
 			await connection.query('SELECT 42 as theAnswer');
 			const queryStream = await connection.streamQuery('SELECT 42 as theAnswer');

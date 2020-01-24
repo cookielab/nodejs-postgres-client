@@ -13,6 +13,8 @@ describe('Client.transaction', () => {
 
 	it('performs a successful transaction', async () => {
 		const result = await client.transaction(async (connection: Connection) => {
+			expect(connection).toBeInstanceOf(Transaction);
+
 			return await connection.query('SELECT 42 AS theAnswer');
 		});
 
@@ -23,6 +25,8 @@ describe('Client.transaction', () => {
 
 	it('performs a failing transaction', async () => {
 		const transaction = client.transaction(async (connection: Connection) => {
+			expect(connection).toBeInstanceOf(Transaction);
+
 			await connection.query('SELECT 42 AS theAnswer');
 			await Promise.reject(new Error('Nope.'));
 			await connection.query('SELECT 43 AS theAnswer');
@@ -34,9 +38,12 @@ describe('Client.transaction', () => {
 
 	it('performs a nested transaction', async () => {
 		const [first, second] = await client.transaction(async (connection: Connection): Promise<[QueryResult, QueryResult]> => {
+			expect(connection).toBeInstanceOf(Transaction);
 			const theAnswer = await connection.query('SELECT 42 AS theAnswer');
 
 			const pi = await connection.transaction(async (nestedConnection: Connection): Promise<QueryResult> => {
+				expect(nestedConnection).toBeInstanceOf(Transaction);
+
 				return await nestedConnection.query('SELECT 3.14 AS pi');
 			});
 
@@ -54,10 +61,12 @@ describe('Client.transaction', () => {
 	it('performs nested transactions in sequence using iteration and Promise.all', async () => {
 		const iterations = new Array(3).fill(null);
 
-		await client.transaction(async (connection: Transaction<void>) => {
+		await client.transaction(async (connection: Connection) => {
+			expect(connection).toBeInstanceOf(Transaction);
 			let counter = 0;
 			await Promise.all(iterations.map(async (value: null, index: number) => {
-				await connection.transaction(async (nestedConnection: Transaction<void>) => {
+				await connection.transaction(async (nestedConnection: Connection) => {
+					expect(nestedConnection).toBeInstanceOf(Transaction);
 					expect(counter).toBe(index);
 					// the first nested transaction takes the most time so we can be sure about following assertions
 					await sleep(100 - (index * 20));
