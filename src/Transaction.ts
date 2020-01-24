@@ -37,9 +37,9 @@ class Transaction<T> extends QueryableConnection implements Connection {
 		const transaction = new Transaction<X>(client, options);
 		const result = await transactionCallback(transaction);
 
-		// ensure that all locks are released by acquiring it
-		await transaction.lock.acquire();
-		transaction.lock.release();
+		if (!transaction.lock.tryAcquire()) {
+			throw new Error('The transaction callback resolved but not all queries, nested transactions or streams are finished. Check your transaction callback and make sure that all of it is done before resolving the callback.');
+		}
 
 		return result;
 	}

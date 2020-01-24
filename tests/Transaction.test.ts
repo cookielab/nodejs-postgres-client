@@ -16,10 +16,6 @@ describe('Transaction', () => {
 		await Transaction.createAndRun(client, transactionCallback);
 
 		expect(transactionCallback).toHaveBeenCalledTimes(1);
-		// @ts-ignore allow constructor usage in tests
-		expect(transactionCallback).toHaveBeenCalledWith(new Transaction(client, {
-			savepointCounter: 1,
-		}));
 
 		expect(client.query).toHaveBeenCalledTimes(1);
 		expect(client.query).toHaveBeenNthCalledWith(1, 'TEST', undefined);
@@ -41,10 +37,6 @@ describe('Transaction', () => {
 		await Transaction.createAndRun(client, transactionCallback);
 
 		expect(nestedTransactionCallback).toHaveBeenCalledTimes(1);
-		// @ts-ignore allow constructor usage in tests
-		expect(nestedTransactionCallback).toHaveBeenCalledWith(new Transaction(client, {
-			savepointCounter: 2,
-		}));
 
 		expect(client.query).toHaveBeenCalledTimes(3);
 		expect(client.query).toHaveBeenNthCalledWith(1, 'SAVEPOINT savepoint1', undefined);
@@ -72,10 +64,6 @@ describe('Transaction', () => {
 			.toEqual(new Error('Failing transaction'));
 
 		expect(nestedTransactionCallback).toHaveBeenCalledTimes(1);
-		// @ts-ignore allow constructor usage in tests
-		expect(nestedTransactionCallback).toHaveBeenCalledWith(new Transaction(client, {
-			savepointCounter: 2,
-		}));
 
 		expect(client.query).toHaveBeenCalledTimes(3);
 		expect(client.query).toHaveBeenNthCalledWith(1, 'SAVEPOINT savepoint1', undefined);
@@ -105,19 +93,45 @@ describe('Transaction', () => {
 			await connection.transaction(nestedTransactionCallback);
 			await connection.query('SELECT 42 as theAnswer');
 			const queryStream = await connection.streamQuery('SELECT 42 as theAnswer');
-			setTimeout(() => queryStream.destroy(), 50);
+			const queryStreamEndPromise = new Promise((resolve: () => void) => {
+				queryStream.once('close', resolve);
+			});
+			setTimeout(() => queryStream.destroy(), 100);
 			const insertStream = await connection.insertStream('test_insert_stream_table');
-			setTimeout(() => insertStream.destroy(), 50);
+			const insertStreamEndPromise = new Promise((resolve: () => void) => {
+				insertStream.once('close', resolve);
+			});
+			setTimeout(() => insertStream.destroy(), 90);
 			const deleteStream = await connection.deleteStream('test_delete_stream_table');
-			setTimeout(() => deleteStream.destroy(), 50);
+			const deleteStreamEndPromise = new Promise((resolve: () => void) => {
+				deleteStream.once('close', resolve);
+			});
+			setTimeout(() => deleteStream.destroy(), 80);
 			await connection.transaction(nestedTransactionCallback);
 			await connection.query('SELECT 42 as theAnswer');
 			const queryStream2 = await connection.streamQuery('SELECT 42 as theAnswer');
-			setTimeout(() => queryStream2.destroy(), 50);
+			const queryStream2EndPromise = new Promise((resolve: () => void) => {
+				queryStream2.once('close', resolve);
+			});
+			setTimeout(() => queryStream2.destroy(), 70);
 			const insertStream2 = await connection.insertStream('test_insert_stream_table');
-			setTimeout(() => insertStream2.destroy(), 50);
+			const insertStream2EndPromise = new Promise((resolve: () => void) => {
+				insertStream2.once('close', resolve);
+			});
+			setTimeout(() => insertStream2.destroy(), 60);
 			const deleteStream2 = await connection.deleteStream('test_delete_stream_table');
+			const deleteStream2EndPromise = new Promise((resolve: () => void) => {
+				deleteStream2.once('close', resolve);
+			});
 			setTimeout(() => deleteStream2.destroy(), 50);
+			await Promise.all([
+				queryStreamEndPromise,
+				insertStreamEndPromise,
+				deleteStreamEndPromise,
+				queryStream2EndPromise,
+				insertStream2EndPromise,
+				deleteStream2EndPromise,
+			]);
 		};
 
 		await Transaction.createAndRun(client, transactionCallback);

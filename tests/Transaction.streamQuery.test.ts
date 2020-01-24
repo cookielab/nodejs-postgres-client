@@ -19,7 +19,11 @@ describe('Transaction.streamQuery', () => {
 			expect(connection).toBeInstanceOf(Transaction);
 			const stream = await connection.streamQuery('');
 			expect(stream).toBeInstanceOf(DatabaseReadStream);
+			const streamEndPromise = new Promise((resolve: () => void) => {
+				stream.once('close', resolve);
+			});
 			stream.destroy();
+			await streamEndPromise;
 		});
 
 		expect(databaseClient.query).toHaveBeenCalledTimes(1);
@@ -51,9 +55,12 @@ describe('Transaction.streamQuery', () => {
 			const stream = await connection.streamQuery('');
 			expect(stream).toBeInstanceOf(DatabaseReadStream);
 
-			setTimeout(() => {
-				stream.emit('error', new Error('TEST2'));
-			}, 50);
+			await new Promise((resolve: () => void) => {
+				setTimeout(() => {
+					stream.emit('error', new Error('TEST2'));
+					resolve();
+				}, 50);
+			});
 		});
 
 		expect(databaseClient.query).toHaveBeenCalledTimes(1);
