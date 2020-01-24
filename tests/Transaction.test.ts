@@ -8,7 +8,10 @@ describe('Transaction', () => {
 		const client: jest.Mocked<Client> = new (jest.fn())();
 		client.query = jest.fn();
 
-		const nestedTransactionCallback = jest.fn();
+		const nestedTransactionCallback = jest.fn(async (connection: Connection): Promise<void> => {
+			expect(connection).toBeInstanceOf(Transaction);
+			await connection.query('TEST');
+		});
 		const transactionCallback = async (connection: Connection): Promise<void> => {
 			expect(connection).toBeInstanceOf(Transaction);
 			await connection.transaction(nestedTransactionCallback);
@@ -22,18 +25,21 @@ describe('Transaction', () => {
 			savepointCounter: 2,
 		}));
 
-		expect(client.query).toHaveBeenCalledTimes(2);
+		expect(client.query).toHaveBeenCalledTimes(3);
 		expect(client.query).toHaveBeenNthCalledWith(1, 'SAVEPOINT savepoint1', undefined);
-		expect(client.query).toHaveBeenNthCalledWith(2, 'RELEASE SAVEPOINT savepoint1', undefined);
+		expect(client.query).toHaveBeenNthCalledWith(2, 'TEST', undefined);
+		expect(client.query).toHaveBeenNthCalledWith(3, 'RELEASE SAVEPOINT savepoint1', undefined);
 	});
 
 	it('rollbacks for a failing nested transaction callback', async () => {
 		const client: jest.Mocked<Client> = new (jest.fn())();
 		client.query = jest.fn();
 
-		const nestedTransactionCallback = jest.fn((connection: Connection) => {
+		const nestedTransactionCallback = jest.fn(async (connection: Connection): Promise<void> => {
 			expect(connection).toBeInstanceOf(Transaction);
-			throw new Error('Failing transaction');
+			await connection.query('TEST1');
+			await Promise.reject(new Error('Failing transaction'));
+			await connection.query('TEST2');
 		});
 		const transactionCallback = async (connection: Connection): Promise<void> => {
 			expect(connection).toBeInstanceOf(Transaction);
@@ -50,9 +56,10 @@ describe('Transaction', () => {
 			savepointCounter: 2,
 		}));
 
-		expect(client.query).toHaveBeenCalledTimes(2);
+		expect(client.query).toHaveBeenCalledTimes(3);
 		expect(client.query).toHaveBeenNthCalledWith(1, 'SAVEPOINT savepoint1', undefined);
-		expect(client.query).toHaveBeenNthCalledWith(2, 'ROLLBACK TO SAVEPOINT savepoint1', undefined);
+		expect(client.query).toHaveBeenNthCalledWith(2, 'TEST1', undefined);
+		expect(client.query).toHaveBeenNthCalledWith(3, 'ROLLBACK TO SAVEPOINT savepoint1', undefined);
 	});
 
 	it('awaits all (previous) pending locks before next "query" or committing the transaction', async () => {
