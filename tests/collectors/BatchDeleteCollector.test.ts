@@ -1,19 +1,17 @@
-import {AsyncQueryable} from '../src/Connection';
-import {BatchInsertCollector} from '../src';
+import {AsyncQueryable} from '../../src/Connection';
+import {BatchDeleteCollector} from '../../src';
 import {QueryConfig} from 'pg';
-import {sleep} from './utils';
+import {sleep} from '../utils';
 
-const createItem = (id: number): {readonly id: number} => ({id});
-
-describe('BatchInsertCollector', () => {
-	let insertedValues: Set<unknown> = new Set();
+describe('BatchDeleteCollector', () => {
+	let deletedValues: Set<unknown> = new Set();
 	const database: AsyncQueryable = {
 		query: async (sql: QueryConfig) => {
-			const beforeInserted = insertedValues.size;
+			const beforeDeleted = deletedValues.size;
 			for (const value of (sql.values ?? [])) {
-				insertedValues.add(value);
+				deletedValues.add(value);
 			}
-			const rowCount: number = insertedValues.size - beforeInserted;
+			const rowCount: number = deletedValues.size - beforeDeleted;
 
 			return await Promise.resolve({
 				rowCount: rowCount,
@@ -30,12 +28,12 @@ describe('BatchInsertCollector', () => {
 		spyOnDatabaseQuery = jest.spyOn(database, 'query');
 	});
 	afterEach(() => {
-		insertedValues = new Set();
+		deletedValues = new Set();
 		spyOnDatabaseQuery?.mockRestore();
 	});
 
 	it('use default batch size if less or equal to 0', () => {
-		const collector = new BatchInsertCollector(database, 'account', {
+		const collector = new BatchDeleteCollector(database, 'account', {
 			batchSize: 0,
 		});
 
@@ -43,15 +41,15 @@ describe('BatchInsertCollector', () => {
 	});
 
 	it('use default batch size if greater than MAX', () => {
-		const collector = new BatchInsertCollector(database, 'account', {
+		const collector = new BatchDeleteCollector(database, 'account', {
 			batchSize: 1001,
 		});
 
 		expect(collector.getBatchSize()).toBe(1000);
 	});
 
-	it('does not do anything on flush for no rows added', async () => {
-		const collector = new BatchInsertCollector(database, 'account', {
+	it('does not do anything on flush for no keys added', async () => {
+		const collector = new BatchDeleteCollector(database, 'account', {
 			batchSize: 2,
 		});
 		await collector.flush();
@@ -59,29 +57,29 @@ describe('BatchInsertCollector', () => {
 		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(0);
 	});
 
-	it('returns void after adding a row', () => {
-		const collector = new BatchInsertCollector(database, 'account', {
+	it('returns void after adding a key', () => {
+		const collector = new BatchDeleteCollector(database, 'account', {
 			batchSize: 2,
 		});
 
-		const result = collector.add(createItem(1));
+		const result = collector.add(1);
 
 		expect(result).toBeUndefined();
 	});
 
 	it('calls a query every batch size addition or on flush', async () => {
-		const collector = new BatchInsertCollector(database, 'account', {
+		const collector = new BatchDeleteCollector(database, 'account', {
 			batchSize: 2,
 		});
 
-		collector.add(createItem(1));
-		collector.add(createItem(2));
-		collector.add(createItem(3));
-		collector.add(createItem(4));
+		collector.add(1);
+		collector.add(2);
+		collector.add(3);
+		collector.add(4);
 		await sleep(50);
 		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(2);
 
-		collector.add(createItem(5));
+		collector.add(5);
 		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(2);
 		await sleep(50);
 		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(2);
@@ -90,7 +88,7 @@ describe('BatchInsertCollector', () => {
 		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(3);
 		expect(spyOnDatabaseQuery).toHaveBeenNthCalledWith(1, {
 			asymmetricMatch: (sql: QueryConfig): boolean => {
-				expect(sql.text).toBe('INSERT INTO "account" ("id") VALUES ($1),\n($2) ');
+				expect(sql.text).toBe('DELETE FROM "account" WHERE "id" IN ($1, $2)');
 				expect(sql.values).toEqual([1, 2]);
 
 				return true;
@@ -98,7 +96,7 @@ describe('BatchInsertCollector', () => {
 		});
 		expect(spyOnDatabaseQuery).toHaveBeenNthCalledWith(2, {
 			asymmetricMatch: (sql: QueryConfig): boolean => {
-				expect(sql.text).toBe('INSERT INTO "account" ("id") VALUES ($1),\n($2) ');
+				expect(sql.text).toBe('DELETE FROM "account" WHERE "id" IN ($1, $2)');
 				expect(sql.values).toEqual([3, 4]);
 
 				return true;
@@ -106,7 +104,7 @@ describe('BatchInsertCollector', () => {
 		});
 		expect(spyOnDatabaseQuery).toHaveBeenNthCalledWith(3, {
 			asymmetricMatch: (sql: QueryConfig): boolean => {
-				expect(sql.text).toBe('INSERT INTO "account" ("id") VALUES ($1) ');
+				expect(sql.text).toBe('DELETE FROM "account" WHERE "id" IN ($1)');
 				expect(sql.values).toEqual([5]);
 
 				return true;
@@ -114,19 +112,19 @@ describe('BatchInsertCollector', () => {
 		});
 	});
 
-	it('supports query suffix', async () => {
-		const collector = new BatchInsertCollector(database, 'account', {
+	it('supports configurable key column name', async () => {
+		const collector = new BatchDeleteCollector(database, 'account', {
 			batchSize: 2,
-			querySuffix: 'ON CONFLICT DO NOTHING',
+			keyName: 'foo',
 		});
 
-		collector.add(createItem(1));
+		collector.add(1);
 		await collector.flush();
 
 		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(1);
 		expect(spyOnDatabaseQuery).toBeCalledWith({
 			asymmetricMatch: (sql: QueryConfig): boolean => {
-				expect(sql.text).toBe('INSERT INTO "account" ("id") VALUES ($1) ON CONFLICT DO NOTHING');
+				expect(sql.text).toBe('DELETE FROM "account" WHERE "foo" IN ($1)');
 				expect(sql.values).toEqual([1]);
 
 				return true;
@@ -134,25 +132,24 @@ describe('BatchInsertCollector', () => {
 		});
 	});
 
-	it('calculates amount of inserted rows by query result not by added rows', async () => {
-		const collector = new BatchInsertCollector(database, 'account', {
+	it('calculates amount of deleted rows by query result not by added keys', async () => {
+		const collector = new BatchDeleteCollector(database, 'account', {
 			batchSize: 2,
-			querySuffix: 'ON CONFLICT DO NOTHING',
 		});
 
-		collector.add(createItem(1));
-		collector.add(createItem(2));
-		collector.add(createItem(3));
-		collector.add(createItem(4));
-		collector.add(createItem(2)); // duplicate item
+		collector.add(1);
+		collector.add(2);
+		collector.add(3);
+		collector.add(4);
+		collector.add(2); // duplicate item
 		await collector.flush();
 
 		// Calling add method 5 times with a row but only 4 rows have been added because of duplicate key
-		expect(collector.getInsertedRowCount()).toBe(4);
+		expect(collector.getAffectedRowCount()).toBe(4);
 	});
 
 	it('fails on the next .add call for failed auto-flush', async () => {
-		const collector = new BatchInsertCollector(database, 'account', {
+		const collector = new BatchDeleteCollector(database, 'account', {
 			batchSize: 2,
 		});
 
@@ -161,8 +158,8 @@ describe('BatchInsertCollector', () => {
 			throw new Error('TEST');
 		});
 
-		collector.add(createItem(1));
-		collector.add(createItem(1));
+		collector.add(1);
+		collector.add(2);
 
 		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(0);
 
@@ -170,7 +167,7 @@ describe('BatchInsertCollector', () => {
 
 		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(1);
 
-		collector.add(createItem(2));
+		collector.add(3);
 
 		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(1);
 
@@ -178,13 +175,13 @@ describe('BatchInsertCollector', () => {
 
 		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(1);
 
-		expect(() => collector.add(createItem(3))).toThrow(new Error('TEST'));
+		expect(() => collector.add(4)).toThrow(new Error('TEST'));
 
 		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(1);
 	});
 
 	it('fails on the manual .flush call for failed auto-flush', async () => {
-		const collector = new BatchInsertCollector(database, 'account', {
+		const collector = new BatchDeleteCollector(database, 'account', {
 			batchSize: 2,
 		});
 
@@ -193,8 +190,8 @@ describe('BatchInsertCollector', () => {
 			throw new Error('TEST');
 		});
 
-		collector.add(createItem(1));
-		collector.add(createItem(1));
+		collector.add(1);
+		collector.add(2);
 
 		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(0);
 
@@ -202,7 +199,7 @@ describe('BatchInsertCollector', () => {
 
 		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(1);
 
-		collector.add(createItem(2));
+		collector.add(3);
 
 		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(1);
 
@@ -216,7 +213,7 @@ describe('BatchInsertCollector', () => {
 	});
 
 	it('fails on the manual .flush call', async () => {
-		const collector = new BatchInsertCollector(database, 'account', {
+		const collector = new BatchDeleteCollector(database, 'account', {
 			batchSize: 2,
 		});
 
@@ -232,8 +229,8 @@ describe('BatchInsertCollector', () => {
 				throw new Error('TEST');
 			});
 
-		collector.add(createItem(1));
-		collector.add(createItem(1));
+		collector.add(1);
+		collector.add(2);
 
 		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(0);
 
@@ -241,7 +238,7 @@ describe('BatchInsertCollector', () => {
 
 		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(1);
 
-		collector.add(createItem(2));
+		collector.add(3);
 
 		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(1);
 

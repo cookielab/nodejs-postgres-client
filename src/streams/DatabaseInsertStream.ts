@@ -1,6 +1,6 @@
 import {Row} from '../Row';
 import {Writable} from 'stream';
-import BatchInsertCollector from '../BatchInsertCollector';
+import BatchInsertCollector from '../collectors/BatchInsertCollector';
 
 export default class DatabaseInsertStream<T extends Row> extends Writable {
 	private readonly batchInsertCollector: BatchInsertCollector<T>;
@@ -26,7 +26,7 @@ export default class DatabaseInsertStream<T extends Row> extends Writable {
 		try {
 			await this.batchInsertCollector.flush();
 			this.emit('inserting_finished', {
-				insertedRowCount: this.batchInsertCollector.getInsertedRowCount(),
+				affectedRowCount: this.batchInsertCollector.getAffectedRowCount(),
 			});
 			callback();
 		} catch (error) {

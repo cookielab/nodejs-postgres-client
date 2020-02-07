@@ -1,5 +1,5 @@
 import {Writable} from 'stream';
-import BatchDeleteCollector, {OneDatabaseValue} from '../BatchDeleteCollector';
+import BatchDeleteCollector, {OneDatabaseValue} from '../collectors/BatchDeleteCollector';
 
 export default class DatabaseDeleteStream<T extends OneDatabaseValue> extends Writable {
 	private readonly batchDeleteCollector: BatchDeleteCollector<T>;
@@ -25,7 +25,7 @@ export default class DatabaseDeleteStream<T extends OneDatabaseValue> extends Wr
 		try {
 			await this.batchDeleteCollector.flush();
 			this.emit('deleting_finished', {
-				deletedRowCount: this.batchDeleteCollector.getDeletedRowCount(),
+				affectedRowCount: this.batchDeleteCollector.getAffectedRowCount(),
 			});
 			callback();
 		} catch (error) {

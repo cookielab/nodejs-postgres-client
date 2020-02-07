@@ -2,7 +2,7 @@ import {SQL} from 'pg-async';
 import {WritableStreamAsyncWriter} from '@cookielab.io/stream-async-wrappers';
 import {createPool} from '../bootstrap';
 import {sleep} from '../utils';
-import BatchInsertCollector from '../../src/BatchInsertCollector';
+import BatchInsertCollector from '../../src/collectors/BatchInsertCollector';
 import Client from '../../src/Client';
 import DatabaseInsertStream from '../../src/streams/DatabaseInsertStream';
 import columnNameTransformer from '../../src/transformers/columnNameTransformer';
@@ -65,7 +65,7 @@ describe('DatabaseInsertStream', () => {
 		const stream = new WritableStreamAsyncWriter(insertStream);
 		const eventPromise = new Promise((resolve: () => void) => {
 			insertStream.once('inserting_finished', (result: object) => {
-				expect(result).toHaveProperty('insertedRowCount', 7);
+				expect(result).toHaveProperty('affectedRowCount', 7);
 				resolve();
 			});
 		});

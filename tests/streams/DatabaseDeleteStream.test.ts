@@ -2,7 +2,7 @@ import {SQL} from 'pg-async';
 import {WritableStreamAsyncWriter} from '@cookielab.io/stream-async-wrappers';
 import {createPool} from '../bootstrap';
 import {sleep} from '../utils';
-import BatchDeleteCollector from '../../src/BatchDeleteCollector';
+import BatchDeleteCollector from '../../src/collectors/BatchDeleteCollector';
 import Client from '../../src/Client';
 import DatabaseDeleteStream from '../../src/streams/DatabaseDeleteStream';
 import valueListTransformer from '../../src/transformers/valueListTransformer';
@@ -62,7 +62,7 @@ describe('DatabaseDeleteStream', () => {
 		const stream = new WritableStreamAsyncWriter(deleteStream);
 		const eventPromise = new Promise((resolve: () => void) => {
 			deleteStream.once('deleting_finished', (result: object) => {
-				expect(result).toHaveProperty('deletedRowCount', 3);
+				expect(result).toHaveProperty('affectedRowCount', 3);
 				resolve();
 			});
 		});

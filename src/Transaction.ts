@@ -1,7 +1,7 @@
 import {Client, PoolClient, QueryConfig, QueryResult} from 'pg';
 import {Connection} from './Connection';
-import {DeleteCollectorOptions, OneDatabaseValue} from './BatchDeleteCollector';
-import {InsertCollectorOptions} from './BatchInsertCollector';
+import {DeleteCollectorOptions, OneDatabaseValue} from './collectors/BatchDeleteCollector';
+import {InsertCollectorOptions} from './collectors/BatchInsertCollector';
 import {Lock} from 'semaphore-async-await';
 import {Row} from './Row';
 import {Stream} from 'stream';

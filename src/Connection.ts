@@ -1,5 +1,5 @@
-import {DeleteCollectorOptions, OneDatabaseValue} from './BatchDeleteCollector';
-import {InsertCollectorOptions} from './BatchInsertCollector';
+import {DeleteCollectorOptions, OneDatabaseValue} from './collectors/BatchDeleteCollector';
+import {InsertCollectorOptions} from './collectors/BatchInsertCollector';
 import {QueryConfig, QueryResult} from 'pg';
 import {Row} from './Row';
 import DatabaseDeleteStream from './streams/DatabaseDeleteStream';
