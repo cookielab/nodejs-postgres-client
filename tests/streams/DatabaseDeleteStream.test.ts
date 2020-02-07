@@ -84,7 +84,7 @@ describe('DatabaseDeleteStream', () => {
 		});
 		const deleteStream = new DatabaseDeleteStream(batchDeleteCollector);
 		const promise = new Promise((resolve: () => void, reject: (error: Error) => void) => {
-			deleteStream.once('error', reject);
+			deleteStream.on('error', reject);
 			deleteStream.once('finish', () => {
 				deleteStream.removeListener('error', reject);
 				resolve();
@@ -93,9 +93,14 @@ describe('DatabaseDeleteStream', () => {
 
 		deleteStream.write(1);
 		deleteStream.write({});
-		deleteStream.end();
+
+		await sleep(50);
+
+		deleteStream.write(2);
 
 		await expect(promise).rejects.toThrow();
+
+		deleteStream.end();
 	});
 
 	it('triggers error on wrong delete at the end', async () => {

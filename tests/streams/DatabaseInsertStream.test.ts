@@ -87,7 +87,7 @@ describe('DatabaseInsertStream', () => {
 		});
 		const insertStream = new DatabaseInsertStream(batchInsertCollector);
 		const promise = new Promise((resolve: () => void, reject: (error: Error) => void) => {
-			insertStream.once('error', reject);
+			insertStream.on('error', reject);
 			insertStream.once('finish', () => {
 				insertStream.removeListener('error', reject);
 				resolve();
@@ -96,9 +96,14 @@ describe('DatabaseInsertStream', () => {
 
 		insertStream.write({id: 1, name: 'Lorem Ipsum'});
 		insertStream.write({id: 1, name: 'Lorem Ipsum'});
-		insertStream.end();
+
+		await sleep(50);
+
+		insertStream.write({id: 2, name: 'Lorem Ipsum2'});
 
 		await expect(promise).rejects.toThrow();
+
+		insertStream.end();
 	});
 
 	it('triggers error on wrong insert at the end', async () => {
