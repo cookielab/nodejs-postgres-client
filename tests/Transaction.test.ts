@@ -1,9 +1,50 @@
 import {Client, QueryConfig} from 'pg';
 import {Connection, DatabaseReadStream} from '../src';
 import {sleep} from './utils';
+import QueryError from '../src/errors/QueryError';
 import Transaction from '../src/Transaction';
 
 describe('Transaction', () => {
+	it('rethrows error from connection without debug mode', async () => {
+		const client: jest.Mocked<Client> = new (jest.fn())();
+		// @ts-ignore
+		client.query = jest.fn(async () => await Promise.reject(new Error('TEST')));
+
+		const transactionCallback = jest.fn(async (connection: Connection): Promise<void> => {
+			expect(connection).toBeInstanceOf(Transaction);
+			await expect(connection.query('TEST')).rejects.toEqual(new Error('TEST'));
+		});
+
+		await Transaction.createAndRun(client, transactionCallback);
+
+		expect(transactionCallback).toHaveBeenCalledTimes(1);
+
+		expect(client.query).toHaveBeenCalledTimes(1);
+		expect(client.query).toHaveBeenNthCalledWith(1, 'TEST', undefined);
+	});
+
+	it('rethrows error from connection with debug mode', async () => {
+		const client: jest.Mocked<Client> = new (jest.fn())();
+		// @ts-ignore
+		client.query = jest.fn(async () => await Promise.reject(new Error('TEST')));
+
+		const transactionCallback = jest.fn(async (connection: Connection): Promise<void> => {
+			expect(connection).toBeInstanceOf(Transaction);
+			const queryPromise = connection.query('TEST');
+			await expect(queryPromise).rejects.toBeInstanceOf(QueryError);
+			await expect(queryPromise).rejects.toHaveProperty('causedBy', new Error('TEST'));
+		});
+
+		await Transaction.createAndRun(client, transactionCallback, {
+			debug: true,
+		});
+
+		expect(transactionCallback).toHaveBeenCalledTimes(1);
+
+		expect(client.query).toHaveBeenCalledTimes(1);
+		expect(client.query).toHaveBeenNthCalledWith(1, 'TEST', undefined);
+	});
+
 	it('executes the given callback', async () => {
 		const client: jest.Mocked<Client> = new (jest.fn())();
 		client.query = jest.fn();
@@ -42,6 +83,27 @@ describe('Transaction', () => {
 		expect(client.query).toHaveBeenNthCalledWith(1, 'SAVEPOINT savepoint1', undefined);
 		expect(client.query).toHaveBeenNthCalledWith(2, 'TEST', undefined);
 		expect(client.query).toHaveBeenNthCalledWith(3, 'RELEASE SAVEPOINT savepoint1', undefined);
+	});
+
+	it('throws error when finishing callback without awaiting stream ends', async () => {
+		const client: jest.Mocked<Client> = new (jest.fn())();
+		client.query = jest.fn();
+
+		const transactionCallback = jest.fn(async (connection: Connection): Promise<void> => {
+			expect(connection).toBeInstanceOf(Transaction);
+			await connection.query('TEST');
+			await connection.insertStream('TEST');
+			// here should be the stream end awaited
+		});
+
+		await expect(Transaction.createAndRun(client, transactionCallback))
+			.rejects
+			.toEqual(new Error('The transaction callback resolved but not all queries, nested transactions or streams are finished. Check your transaction callback and make sure that all of it is done before resolving the callback.'));
+
+		expect(transactionCallback).toHaveBeenCalledTimes(1);
+
+		expect(client.query).toHaveBeenCalledTimes(1);
+		expect(client.query).toHaveBeenNthCalledWith(1, 'TEST', undefined);
 	});
 
 	it('rollbacks for a failing nested transaction callback', async () => {
