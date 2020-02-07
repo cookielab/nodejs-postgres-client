@@ -30,6 +30,7 @@ class BatchDeleteCollector<T extends OneDatabaseValue> {
 	private deletedRowCount: number;
 	private keys: T[];
 	private flushPromise: Promise<void>;
+	private error: Error | null;
 
 	public constructor(connection: AsyncQueryable, tableName: string, options?: DeleteCollectorOptions) {
 		this.connection = connection;
@@ -43,6 +44,7 @@ class BatchDeleteCollector<T extends OneDatabaseValue> {
 		this.deletedRowCount = 0;
 		this.keys = [];
 		this.flushPromise = Promise.resolve();
+		this.error = null;
 	}
 
 	public getBatchSize(): number {
@@ -54,20 +56,37 @@ class BatchDeleteCollector<T extends OneDatabaseValue> {
 	}
 
 	public add(key: T): void {
+		if (this.error != null) {
+			throw this.error;
+		}
 		this.keys.push(key);
 		if (this.keys.length >= this.options.batchSize) {
-			this.flushPromise = this.flush();
+			this.flushPromise = this.flushInternal(true);
 		}
 	}
 
 	public async flush(): Promise<void> {
+		return await this.flushInternal(false);
+	}
+
+	private async flushInternal(internalCall: boolean): Promise<void> {
 		const keys = this.keys;
 		const promise = this.flushPromise;
 		this.keys = [];
 		await promise;
+		if (!internalCall && this.error != null) {
+			throw this.error;
+		}
 		if (keys.length > 0) {
-			const result = await this.connection.query(SQL`DELETE FROM $identifier${this.tableName} WHERE $identifier${this.options.keyName} IN ($values${keys})`);
-			this.deletedRowCount = this.deletedRowCount + result.rowCount;
+			try {
+				const result = await this.connection.query(SQL`DELETE FROM $identifier${this.tableName} WHERE $identifier${this.options.keyName} IN ($values${keys})`);
+				this.deletedRowCount = this.deletedRowCount + result.rowCount;
+			} catch (error) {
+				this.error = error;
+				if (!internalCall) {
+					throw error;
+				}
+			}
 		}
 	}
 }

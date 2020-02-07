@@ -147,4 +147,107 @@ describe('BatchDeleteCollector', () => {
 		// Calling add method 5 times with a row but only 4 rows have been added because of duplicate key
 		expect(collector.getDeletedRowCount()).toBe(4);
 	});
+
+	it('fails on the next .add call for failed auto-flush', async () => {
+		const collector = new BatchDeleteCollector(database, 'account', {
+			batchSize: 2,
+		});
+
+		spyOnDatabaseQuery?.mockImplementationOnce(async () => {
+			await sleep(50);
+			throw new Error('TEST');
+		});
+
+		collector.add(1);
+		collector.add(2);
+
+		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(0);
+
+		await sleep(10);
+
+		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(1);
+
+		collector.add(3);
+
+		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(1);
+
+		await sleep(50);
+
+		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(1);
+
+		expect(() => collector.add(4)).toThrow(new Error('TEST'));
+
+		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(1);
+	});
+
+	it('fails on the manual .flush call for failed auto-flush', async () => {
+		const collector = new BatchDeleteCollector(database, 'account', {
+			batchSize: 2,
+		});
+
+		spyOnDatabaseQuery?.mockImplementationOnce(async () => {
+			await sleep(50);
+			throw new Error('TEST');
+		});
+
+		collector.add(1);
+		collector.add(2);
+
+		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(0);
+
+		await sleep(10);
+
+		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(1);
+
+		collector.add(3);
+
+		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(1);
+
+		await sleep(50);
+
+		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(1);
+
+		await expect(collector.flush()).rejects.toEqual(new Error('TEST'));
+
+		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(1);
+	});
+
+	it('fails on the manual .flush call', async () => {
+		const collector = new BatchDeleteCollector(database, 'account', {
+			batchSize: 2,
+		});
+
+		spyOnDatabaseQuery?.mockImplementationOnce(async () => await Promise.resolve({
+			rowCount: 2,
+			command: '',
+			oid: 0,
+			fields: [],
+			rows: [],
+		}))
+			.mockImplementationOnce(async () => {
+				await sleep(50);
+				throw new Error('TEST');
+			});
+
+		collector.add(1);
+		collector.add(2);
+
+		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(0);
+
+		await sleep(10);
+
+		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(1);
+
+		collector.add(3);
+
+		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(1);
+
+		await sleep(50);
+
+		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(1);
+
+		await expect(collector.flush()).rejects.toEqual(new Error('TEST'));
+
+		expect(spyOnDatabaseQuery).toHaveBeenCalledTimes(2);
+	});
 });
